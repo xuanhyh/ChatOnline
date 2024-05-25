@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.chat.mapper.UserFriendMapper">
+    <update id="update">
+        update user_friend
+        <set>
+            <if test="remark != null">
+                remark = #{remark},
+            </if>
+        </set>
+        where user_id = #{userId} and friend_id = #{friendId}
+
+    </update>
+    <delete id="delete">
+        delete from user_friend
+        where (user_id = #{userId} and friend_id = #{friendId})
+              or (user_id = #{friendId} and friend_id = #{userId})
+    </delete>
+    <insert id="createNewGroup" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO friend_groups(user_id, group_name)
+        VALUES (#{userId}, #{groupName})
+    </insert>
+    <insert id="addFriendToGroup">
+        INSERT INTO friend_group_members(group_id, member_id)
+        SELECT id, #{memberId}
+        FROM friend_groups
+        WHERE user_id = #{userId} and group_name = #{groupName}
+    </insert>
+    <delete id="deleteFriendFromGroup">
+        DELETE FROM friend_group_members
+        WHERE group_id IN (
+            SELECT id
+            FROM friend_groups
+            WHERE user_id = #{userId} AND group_name = #{groupName}
+        )
+          AND member_id = #{memberId}
+    </delete>
+    <select id="searchFriendGroup">
+        SELECT group_name
+        FROM friend_groups fgs, friend_group_members fgm
+        WHERE fgs.id = fgm.group_id and fgm.member_id = #{fromUserId} and fgs.user_id = #{toUserId}
+    </select>
+</mapper>

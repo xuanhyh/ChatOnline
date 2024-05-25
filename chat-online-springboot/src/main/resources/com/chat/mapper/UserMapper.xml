@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.chat.mapper.UserMapper">
+    <update id="update">
+        update user
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="username != null">username = #{username},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="updateTime != null">update_Time = #{updateTime},</if>
+            <if test="updateUser != null">update_User = #{updateUser},</if>
+        </set>
+        where user_id = #{id}
+    </update>
+    <select id="checkEmail" resultMap="com.chat.pojo.entity.User">
+        select *
+        from user
+        where email = #{email}
+    </select>
+
+    <select id="checkVerifyCode" resultMap="com.chat.pojo.entity.EmailAndVerifyCode">
+        select *
+        from email_verification
+        where email = #{email}
+    </select>
+    <select id="getFriendById" resultType="com.chat.pojo.entity.User">
+        select *
+        from user
+        where user_id in (select friend_id from user_friend where user_id = #{id})
+    </select>
+    <select id="getByIds" resultType="com.chat.pojo.entity.User">
+        select *
+        from user
+        where user_id in
+        <foreach item="Id" index="index" collection="userIdList" open="(" separator="," close=")">
+            #{Id}
+        </foreach>
+    </select>
+    <insert id="insertDefaultGroup" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO friend_groups (user_id, group_name)
+        VALUES (#{userId}, "default")
+    </insert>
+</mapper>

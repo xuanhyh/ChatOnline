@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.chat.mapper.FriendRequestMapper">
+    <insert id="insertFriendReuqest" useGeneratedKeys="true" keyProperty="id">
+        insert into friend_request (from_user_id, to_user_id, send_time, status)
+        values (#{fromUserId}, #{toUserId}, #{time}, #{status})
+    </insert>
+
+    <select id="getUserById" resultType="com.chat.pojo.entity.FriendRequest">
+        SELECT *
+        FROM friend_request
+        WHERE to_user_id = #{toUserId}
+    </select>
+
+    <update id="updateFriendRequestStatus">
+        update friend_request
+        <set>status = #{status}</set>
+        where from_user_id = #{fromUserId} and to_user_id = #{toUserId} and status = "PENDING"
+    </update>
+
+    <select id="checkRequestExisted" resultType="com.chat.pojo.entity.FriendRequest">
+        SELECT *
+        FROM friend_request
+        WHERE to_user_id = #{toUserId} and from_user_id = #{fromUserId} and status="PENDING"
+    </select>
+
+    <insert id="addFriends" useGeneratedKeys="true">
+        INSERT INTO user_friend (user_id, friend_id)
+        VALUES (#{toUserId}, #{fromUserId})
+    </insert>
+    <insert id="addFriendsReverse" useGeneratedKeys="true">
+        INSERT INTO user_friend (user_id, friend_id)
+        VALUES (#{fromUserId}, #{toUserId})
+    </insert>
+</mapper>

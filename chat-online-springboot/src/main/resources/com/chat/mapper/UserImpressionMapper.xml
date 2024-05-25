@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.chat.mapper.UserImpressionMapper">
+    <update id="update">
+        update user_impression
+        <set>
+            <if test="contentFlag != null">content_flag = #{contentFlag},</if>
+            <if test="impressionText != null">impression_text = #{impressionText},</if>
+            <if test="impressionPicture != null">impression_picture = #{impressionPicture},</if>
+        </set>
+        where impression_id = #{impressionId}
+    </update>
+</mapper>

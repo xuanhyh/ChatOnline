@@ -1,0 +1,16 @@
+src/assets  放置静态文件
+src/components  放置组件
+App.vue  根组件
+main.js  主入口文件
+
+  <div class="hello">
+    <h3>模板语法</h3>
+    <p>{{ message+" hhhh" }}</p>
+    <!-- 双花括号只能显示文本，但支持JS表达式（不是语句！） -->
+    <div v-html="innerHTML"></div>
+    <!-- v-html可以让文本变为HTML -->
+    <div v-bind:id="dynamicID"></div>
+    <!-- v-bind（简写为冒号）可以让属性值动态变化 id值变为了“dID”-->
+    <div :id="dynamicID2"></div>
+    <button @click="increment">Count is: {{ count }}</button>
+  </div>

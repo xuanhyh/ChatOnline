@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.chat.mapper.MessageMapper">
+
+    <select id="selectPrivateMessageTextMessage" resultType="com.chat.pojo.entity.Message">
+        select *
+        from message
+        where sender_id=#{senderId} and receiver_id=#{receiverId}
+    </select>
+
+    <select id="selectGroupMessageTextMessage" resultType="com.chat.pojo.entity.Message">
+        select *
+        from message
+        where receive_group_id=#{groupId}
+    </select>
+</mapper>

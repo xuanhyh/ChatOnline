@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+spring:
+  main:
+    allow-circular-references: true
+  datasource:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://47.121.137.215:3306/chat_online #150.158.2.7为服务器地址
+      username: root
+      password: 123456 #Chat-Online123为服务器密码
+
+mybatis:
+  configuration:
+    #开启驼峰命名
+    map-underscore-to-camel-case: true
+
+chat:
+  jwt:
+    # 设置jwt签名加密时使用的秘钥
+    user-secret-key: chatonline
+    # 设置jwt过期时间, 两个小时
+    user-ttl: 7200000
+    # 设置前端传递过来的令牌名称
+    user-token-name: token
+  smms:
+    token:  # FTYex2aguavQb17C6gDl0LqOjA4JPbzC
