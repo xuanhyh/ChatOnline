@@ -56,7 +56,7 @@ public class JwtTokenInterceptor implements HandlerInterceptor {
             //3、通过，放行
             return true;
         } catch (Exception ex) {
-            //4、不通过，响应401状态码
+            //4、不通过，响应 401 状态码
             response.setStatus(401);
             log.info("jwt校验不通过");
             return false;
