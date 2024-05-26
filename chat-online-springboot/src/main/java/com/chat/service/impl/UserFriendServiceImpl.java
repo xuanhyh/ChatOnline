@@ -52,6 +52,10 @@ public class UserFriendServiceImpl implements UserFriendService {
 
     @Override
     public void respongToFriendRequest(Long fromUserId, String status){
+        // status分为
+        // PENDING 好友请求中
+        // ACCEPT 接受好友请求
+        // REJECT 拒绝好友请求
         // 当前用户是toUser，接受请求方
         Long toUserId = BaseContext.getCurrentId();
         // 更新当前用户对好友请求的操作

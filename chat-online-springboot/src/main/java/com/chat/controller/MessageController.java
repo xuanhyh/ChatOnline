@@ -3,10 +3,16 @@ package com.chat.controller;
 import com.chat.common.result.Result;
 import com.chat.pojo.entity.Message;
 import com.chat.service.MessageService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 
 @RestController
@@ -39,7 +45,12 @@ public class MessageController {
         return Result.success();
     }
 
-
+    @GetMapping("/downloadPrivateMessage")
+    public ResponseEntity<Resource> downloadPrivateMessage(Long userId, Long friendId) throws IOException {
+        log.info("下载id{}的用户与id{}的用户的聊天记录", userId, friendId);
+        ResponseEntity<Resource> resource = messageService.downloadPrivateMessage(userId, friendId);
+        return resource;
+    }
 
 
 

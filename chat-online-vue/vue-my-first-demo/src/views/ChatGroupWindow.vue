@@ -2,22 +2,47 @@
   <div class="container">
     <!-- 侧边栏 -->
     <div class="sidebar">
-      <div class="left-icon" v-for="(channel, index) in channels" :key="index" @click="selectChannel(channel)">
-        <img :src=channel.url :alt="channel.name">
+      <div
+        class="left-icon"
+        v-for="(channel, index) in channels"
+        :key="index"
+        :class="{ 'channel-selected': channelSelected === index }"
+        @click="selectChannel(channel)"
+      >
+        <img :src="channel.url" :alt="channel.name" />
       </div>
     </div>
-    <!-- 好友列表 -->
+    <!-- 群聊列表 -->
     <div class="groups-list">
       <div class="username-label">{{ userInfo_from_store.name }}</div>
       <div class="group-list-head">
-        <input class="group-list-head-search" type="text" placeholder="搜索">
-        <div class="group-list-head-add" title="加好友" @click="showAddGroupDialog()">+</div>
+        <input class="group-list-head-search" type="text" placeholder="搜索" />
+        <div
+          class="group-list-head-add"
+          title="加好友"
+          @click="showAddGroupDialog()"
+        >
+          +
+        </div>
       </div>
-      <div :class="groupClickStyle" class="groups-click" v-for="(group, index) in groups" :key="index"
-        @click="selectGroup(group.groupId, group.groupName)">
+      <div
+        :class="
+          group.groupId === this.now_chat_group_id ? 'group-selected' : 'groups'
+        "
+        class="groups-click"
+        v-for="(group, index) in groups"
+        :key="index"
+        @click="selectGroup(group.groupId, group.groupName)"
+      >
         <div class="avatar-and-badge">
-          <div class="badge" v-if="getUnreadNum(group.groupId) > 0">{{ getUnreadNum(group.groupId) }}</div>
-          <img class="groups-avatar" src='../assets/群聊头像.png' :alt="group.groupName">
+          <div class="badge" v-if="getUnreadNum(group.groupId) > 0">
+            {{ getUnreadNum(group.groupId) }}
+          </div>
+          <img
+            class="groups-avatar"
+            src="../assets/群聊头像.png"
+            :alt="group.groupName"
+          />
         </div>
         <span class="groups-nickname">{{ group.groupName }}</span>
       </div>
@@ -27,14 +52,22 @@
     <!-- <p>store获取到：{{ userInfo_from_store.name }}</p> -->
 
     <!-- 聊天框 -->
-    <div class="dialog-container" :style="{ width: `${dialogContainerWidth}px` }">
-      <div class="dialog-header">
-        {{ chatTo }} {{ errorMessage }}
-      </div>
+    <div
+      class="dialog-container"
+      :style="{ width: `${dialogContainerWidth}px` }"
+    >
+      <div class="dialog-header">{{ chatTo }} {{ errorMessage }}</div>
       <div class="dialog-body" v-show="groupSelected">
-        <div v-for="(message, index) in messages" :key="index" class="message"
-          :class="{ 'sender': message.sender === 'user', 'receiver': message.sender === 'other' }">
-          <img src="../assets/群聊头像.png" class="message-avatar">
+        <div
+          v-for="(message, index) in messages"
+          :key="index"
+          class="message"
+          :class="{
+            sender: message.sender === 'user',
+            receiver: message.sender === 'other',
+          }"
+        >
+          <img src="../assets/群聊头像.png" class="message-avatar" />
           <div class="message-info">
             <div class="message-meta">
               <span class="message-sender">{{ message.name }}</span>
@@ -45,7 +78,12 @@
         </div>
       </div>
       <div class="dialog-footer" v-show="groupSelected">
-        <input type="text" v-model="newMessage" @keyup.enter="sendMessage" placeholder="输入消息..." />
+        <input
+          type="text"
+          v-model="newMessage"
+          @keyup.enter="sendMessage"
+          placeholder="输入消息..."
+        />
         <!-- @keyup.enter="sendMessage"在键盘按下回车时调用sendMessage函数 -->
         <button @click="sendMessage">发送</button>
       </div>
@@ -53,25 +91,22 @@
 
     <!-- 在线广播 -->
     <div class="broadcast-container" v-show="showBroadcast">
-      <div class="dialog-header">
-        在线广播
-      </div>
+      <div class="broadcast-header">在线广播</div>
     </div>
-
   </div>
 </template>
 
 <script>
-import axios from "axios"
+import axios from "axios";
 
 export default {
-  name: 'ChatWithGroup',
+  name: "ChatWithGroup",
   created() {
-    console.log('ChatWithGroup获取到参数', this.$route.params.userName)
+    console.log("ChatWithGroup获取到参数", this.$route.params.userName);
     // this.userInfo_from_query.id=this.$route.query.id;
     // this.userInfo_from_query.userName=this.$route.query.userName;
     // this.userInfo_from_query.name=this.$route.query.name;
-    const jsonParsed = JSON.parse(sessionStorage.getItem('userInfo'));
+    const jsonParsed = JSON.parse(sessionStorage.getItem("userInfo"));
     console.log("userInfo信息：", jsonParsed);
     if (jsonParsed) {
       this.userInfo_from_store = jsonParsed;
@@ -82,29 +117,34 @@ export default {
   data() {
     return {
       channels: [
-        { name: '私聊', url: require("../assets/私聊.png") },
-        { name: '群聊', url: require("../assets/群聊.png") },
-        { name: 'Channel 2', url: require("../assets/探索.png") }
+        { name: "私聊", url: require("../assets/私聊.png") },
+        { name: "群聊", url: require("../assets/群聊.png") },
+        { name: "Channel 2", url: require("../assets/探索.png") },
       ],
       groups: [
         //  { "groupId": 1,"groupName": "聊天交友群","createTime": ,"updateTime": }
       ],
       userInfo_from_query: {
-        id: 0, userName: "no", name: "no",
+        id: 0,
+        userName: "no",
+        name: "no",
       },
       userInfo_from_store: {
-        userId: 0, userName: "no", name: "no", token: "0"
+        userId: 0,
+        userName: "no",
+        name: "no",
+        token: "0",
       },
       messages: [],
       broadcastMessages: [], // 在线广播信息
       unreadMessageNum: [
         // {groupId: 0,unreadNum: 0,}
       ],
-      newMessage: '',
-      errorMessage: '',
+      newMessage: "",
+      errorMessage: "",
       now_chat_flag: 0,
       now_chat_group_id: 0,
-      now_chat_group_name: '',
+      now_chat_group_name: "",
       ws: null,
       showBroadcast: true, // 显示右侧广播
       dialogContainerWidth: 0, // 中间dialog-container的宽度
@@ -112,26 +152,32 @@ export default {
       chatTo: "群聊", // dialgo-container顶部显示文字
       groupClickStyle: "groups", // 好友点击样式
       updateUnreadTimer: null,
-      addGroupDialog: false, // 是否显示添加好友框框    
-    }
+      addGroupDialog: false, // 是否显示添加好友框框
+      channelSelected: 1,
+    };
   },
-  props: {
-  },
+  props: {},
   mounted() {
-    this.ws = new WebSocket('ws://localhost:8080/api/chat/' + this.userInfo_from_store.userId);
+    this.ws = new WebSocket(
+      "ws://localhost:8080/api/chat/" + this.userInfo_from_store.userId
+    );
 
     this.ws.onopen = () => {
-      console.log('WebSocket connection established');
+      console.log("WebSocket connection established");
     };
 
     this.ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
       console.log(msg);
-      if (msg.fromGroup==true & msg.fromId !== this.userInfo_from_store.userId) {
-        console.log('Messages got!');
+      if (
+        (msg.toId != null) &
+        (msg.fromId !== this.userInfo_from_store.userId)
+      ) {
+        console.log("Messages got!");
         this.messages.push({
           text: msg.message,
-          sender: msg.fromId === this.userInfo_from_store.userId ? 'user' : 'other',
+          sender:
+            msg.fromId === this.userInfo_from_store.userId ? "user" : "other",
           time: msg.time,
           name: msg.name,
         });
@@ -139,20 +185,20 @@ export default {
     };
 
     this.ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
+      console.error("WebSocket error:", error);
     };
 
     this.ws.onclose = () => {
-      console.log('WebSocket connection closed');
+      console.log("WebSocket connection closed");
     };
 
     window.addEventListener("resize", this.checkWindowSize);
     this.checkWindowSize();
 
-    //定时查看新未读消息--------------------
-    // this.updateUnreadTimer = setInterval(() => {
-    //   this.updateUnreadMessageNum()
-    // }, 5000);
+    //定时查看新未读消息
+    //   this.updateUnreadTimer = setInterval (() => {
+    //     this.updateUnreadMessageNum()
+    //   }, 5000);
   },
   beforeDestroy() {
     if (this.ws) {
@@ -167,27 +213,27 @@ export default {
         method: "get",
         url: "http://localhost:8080/api/group/getAllGroup",
         headers: {
-          'token': this.userInfo_from_store.token,
+          token: this.userInfo_from_store.token,
         },
         params: {
-          userId: this.userInfo_from_store.userId
+          userId: this.userInfo_from_store.userId,
         },
       })
-        .then(res => {
+        .then((res) => {
           console.log("ChatWithGroup axios收到群聊列表数据:");
           console.log(res.data);
           this.groups = res.data.data;
 
           // 获取好友数据后立即查询有无未读新消息
-          this.updateUnreadMessageNum()
+          this.updateUnreadMessageNum();
         })
-        .catch(error => {
-          console.error('请求失败', error);
+        .catch((error) => {
+          console.error("请求失败", error);
           // 在这里可以进行错误处理，比如给用户提示或者进行其他操作
           if (error.response) {
             this.errorMessage = `请求失败，状态码：${error.response.status}`;
           } else {
-            this.errorMessage = '请求失败，请重试。';
+            this.errorMessage = "请求失败，请重试。";
           }
         });
     },
@@ -196,7 +242,7 @@ export default {
       if (this.groups.length == 0) {
         console.log("群聊数组为空");
       }
-      this.groups.forEach(group => {
+      this.groups.forEach((group) => {
         axios({
           method: "get",
           url: "http://localhost:8080/api/message/getGroupMessageUnreadNum",
@@ -205,40 +251,41 @@ export default {
             userId: this.userInfo_from_store.userId,
           },
           headers: {
-            'Content-Type': 'application/json',
-            'token': this.userInfo_from_store.token,
+            "Content-Type": "application/json",
+            token: this.userInfo_from_store.token,
           },
         })
-          .then(response => {
+          .then((response) => {
             console.log(response.data);
             if (response.data.code == 0) {
               this.errorMessage = response.data.msg;
-            }
-            else if (response.data.code == 1) {
-              const existingUnreadMessageNum = this.unreadMessageNum.find(item => item.groupId === group.groupId);
+            } else if (response.data.code == 1) {
+              const existingUnreadMessageNum = this.unreadMessageNum.find(
+                (item) => item.groupId === group.groupId
+              );
               if (existingUnreadMessageNum) {
-                if (existingUnreadMessageNum.groupId != this.now_chat_group_id) {
+                if (
+                  existingUnreadMessageNum.groupId != this.now_chat_group_id
+                ) {
                   existingUnreadMessageNum.unreadNum = response.data.data;
-                }
-                else {
+                } else {
                   existingUnreadMessageNum.unreadNum = 0;
-                  this.updateReadGroupMessageNum()//更新后还要更新当前聊天群的情况
+                  this.updateReadGroupMessageNum(); //更新后还要更新当前聊天群的情况
                 }
               } else {
                 this.unreadMessageNum.push({
                   groupId: group.groupId,
-                  unreadNum: response.data.data
+                  unreadNum: response.data.data,
                 });
               }
-
             }
           })
-          .catch(error => {
-            console.error('未读消息请求失败', error);
+          .catch((error) => {
+            console.error("未读消息请求失败", error);
             if (error.response) {
               this.errorMessage = `未读消息请求失败，状态码：${error.response.status}`;
             } else {
-              this.errorMessage = '未读消息请求失败，请重试。';
+              this.errorMessage = "未读消息请求失败，请重试。";
             }
           });
       });
@@ -252,12 +299,12 @@ export default {
 
     selectChannel(channel) {
       // 处理选择头像的逻辑，例如显示选中状态等
-      console.log('Selected Channel:', channel.name);
+      console.log("Selected Channel:", channel.name);
       if (channel.name === "群聊") this.resetMiddle();
       else if (channel.name === "私聊") {
         this.$router.push({
-          path: '/chatWithFriend/' + this.userInfo_from_store.userName.userName,
-        })
+          path: "/chatWithFriend/" + this.userInfo_from_store.userName.userName,
+        });
       }
       this.now_chat_group_id = 0;
     },
@@ -276,20 +323,24 @@ export default {
           userId: this.userInfo_from_store.userId,
         },
         headers: {
-          'Content-Type': 'application/json',
-          'token': this.userInfo_from_store.token,
+          "Content-Type": "application/json",
+          token: this.userInfo_from_store.token,
         },
       })
-        .then(response => {
-          console.log("${}设置群聊${}消息已读:", this.userInfo_from_store.userId, this.now_chat_group_id);
+        .then((response) => {
+          console.log(
+            "${}设置群聊${}消息已读:",
+            this.userInfo_from_store.userId,
+            this.now_chat_group_id
+          );
           console.log(response.data);
         })
-        .catch(error => {
-          console.error('请求失败', error);
+        .catch((error) => {
+          console.error("请求失败", error);
           if (error.response) {
             this.errorMessage = `请求失败，状态码：${error.response.status}`;
           } else {
-            this.errorMessage = '请求失败，请重试。';
+            this.errorMessage = "请求失败，请重试。";
           }
         });
     },
@@ -299,25 +350,27 @@ export default {
         url: "http://localhost:8080/api/message/getGroupMessages",
         params: {
           // senderId:this.userInfo_from_store.userId,
-          groupId: this.now_chat_group_id
+          groupId: this.now_chat_group_id,
         },
         headers: {
-          'Content-Type': 'application/json',
-          'token': this.userInfo_from_store.token,
+          "Content-Type": "application/json",
+          token: this.userInfo_from_store.token,
         },
       })
-        .then(response => {
+        .then((response) => {
           console.log("getGroupMessages:");
           console.log(response.data);
           if (response.data.code == 0) {
             this.errorMessage = response.data.msg;
-          }
-          else if (response.data.code == 1) {
+          } else if (response.data.code == 1) {
             this.messages = [];
-            response.data.data.forEach(msg => {
+            response.data.data.forEach((msg) => {
               this.messages.push({
                 text: msg.textMessage,
-                sender: msg.senderId === this.userInfo_from_store.userId ? 'user' : 'other',
+                sender:
+                  msg.senderId === this.userInfo_from_store.userId
+                    ? "user"
+                    : "other",
                 time: msg.sendTimeString,
                 name: msg.senderName,
               });
@@ -327,12 +380,12 @@ export default {
             });
           }
         })
-        .catch(error => {
-          console.error('请求失败', error);
+        .catch((error) => {
+          console.error("请求失败", error);
           if (error.response) {
             this.errorMessage = `请求失败，状态码：${error.response.status}`;
           } else {
-            this.errorMessage = '请求失败，请重试。';
+            this.errorMessage = "请求失败，请重试。";
           }
         });
     },
@@ -341,43 +394,47 @@ export default {
       this.now_chat_group_name = name;
       console.log("选中群聊，id为：" + this.now_chat_group_id);
       this.groupSelected = true;
-      this.chatTo = this.groups[0].name;
-      this.groupClickStyle = "group-selected"
+      this.chatTo = this.now_chat_group_name;
+      this.groupClickStyle = "group-selected";
       this.getGroupMessages();
-      const unreadNumfond = this.unreadMessageNum.find(item => item.groupId === id);
+      const unreadNumfond = this.unreadMessageNum.find(
+        (item) => item.groupId === id
+      );
       if (unreadNumfond) {
-        unreadNumfond.unreadNum = 0
+        unreadNumfond.unreadNum = 0;
       }
       this.updateReadGroupMessageNum();
     },
     getGroupClass(id) {
-      return this.now_chat_group_id === id ? 'group-selected' : 'groups';
+      return this.now_chat_group_id === id ? "group-selected" : "groups";
     },
     BroadcastMessages(message) {
       this.broadcastMessages.push(message);
     },
     sendMessage() {
-      if (this.newMessage.trim() !== '') {
+      if (this.newMessage.trim() !== "") {
         const message_send = {
           fromId: this.userInfo_from_store.userId,
           toGroupId: this.now_chat_group_id,
           message: this.newMessage,
           name: this.userInfo_from_store.name,
-          time: new Date().toLocaleString()
+          time: new Date().toLocaleString(),
         };
         this.ws.send(JSON.stringify(message_send));
         console.log(message_send);
         this.messages.push({
           text: this.newMessage,
-          sender: 'user',
+          sender: "user",
           name: this.userInfo_from_store.name,
-          time: message_send.time
+          time: message_send.time,
         });
-        this.newMessage = '';
+        this.newMessage = "";
       }
     },
     getUnreadNum(groupId) {
-      const message = this.unreadMessageNum.find(item => item.groupId === groupId);
+      const message = this.unreadMessageNum.find(
+        (item) => item.groupId === groupId
+      );
       return message ? message.unreadNum : 0;
     },
     showAddGroupDialog() {
@@ -385,7 +442,7 @@ export default {
       this.addGroupDialog = true;
     },
   },
-}
+};
 </script>
 
 
@@ -405,8 +462,7 @@ export default {
   width: 80px;
   /* 调整宽度 */
   height: 100%;
-  background-color: #232633;
-  /* 黑色背景 */
+  background-color: #1d1d24;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -415,7 +471,8 @@ export default {
 }
 
 .username-label {
-  margin: 20px;
+  margin-top: 20px;
+  margin-bottom: 8px;
   color: white;
   font-size: 24px;
   font-family: "STXingkai", "Microsoft YaHei";
@@ -468,7 +525,7 @@ export default {
   width: 240px;
   /* 调整宽度 */
   height: 100%;
-  background-color: #272A37;
+  background-color: #272a37;
   /* #2B2D31黑色背景 */
   display: flex;
   flex-direction: column;
@@ -484,10 +541,12 @@ export default {
   /* 垂直居中 */
   padding: 8px;
   transition: background-color 0.2s ease;
+  margin-top: 6px;
+  margin-bottom: 2px;
 }
 
 .groups:hover {
-  background-color: #505c8e;
+  background-color: #5959c9;
 }
 
 .group-selected {
@@ -497,7 +556,9 @@ export default {
   align-items: center;
   /* 垂直居中 */
   padding: 8px;
-  background-color: #505c8e;
+  background-color: #5959c9;
+  margin-top: 2px;
+  margin-bottom: 6px;
 }
 
 .groups-avatar {
@@ -557,11 +618,10 @@ export default {
   z-index: 1;
 }
 
-
 .groups-nickname {
   font-size: 16px;
   /* 设置合适大小的字体 */
-  color: #d9d9d9;
+  color: #ebebeb;
   /* 白色字体 */
 }
 
@@ -575,11 +635,11 @@ export default {
   justify-content: space-between;
   height: 44px;
   width: 100%;
-  margin: 0;
+  margin: 8px;
   padding: 0;
-  background-color: #272A37;
-  border-top: rgb(90, 81, 81) solid 1px;
-  border-bottom: rgb(90, 81, 81) solid 1px;
+  background-color: #252d43;
+  border-top: rgb(56, 103, 102) solid 1px;
+  border-bottom: rgb(56, 103, 102) solid 1px;
 }
 
 .group-list-head-search {
@@ -591,7 +651,7 @@ export default {
   border-radius: 4px;
   border: 1px solid #ccc;
   font-size: 14px;
-  background-color: #D8D9D8;
+  background-color: #d8d9d8;
 }
 
 .group-list-head-add {
@@ -600,7 +660,7 @@ export default {
   margin: 10px 10px;
   padding: 0;
   border-radius: 5px;
-  background-color: #D8D9D8;
+  background-color: #d8d9d8;
   font-size: 21px;
   line-height: 27px;
   text-align: center;
@@ -615,8 +675,7 @@ export default {
   top: 0;
   height: 100%;
   left: 320px;
-  border-radius: 5px;
-  background-color: #323644;
+  background-color: #383d4d;
   /* #313338 */
   color: #fff;
   display: flex;
@@ -626,9 +685,8 @@ export default {
 
 .dialog-header {
   padding: 10px;
-  background-color: #35383e;
+  background-color: #2f3241;
   border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
   color: #e0e0e0;
   font-weight: bold;
 }
@@ -645,11 +703,10 @@ export default {
   display: flex;
   min-height: 100px;
   width: 100%;
-  background-color: #35383e;
+  background-color: #2f3241;
   align-items: center;
   justify-content: space-between;
 }
-
 
 .message {
   padding: 12px;
@@ -700,12 +757,12 @@ export default {
   max-width: 90%;
   padding: 20px;
 
-  background-color: rgb(56, 60, 75);
+  background-color: #454b60;
   color: #fff;
 }
 
 .message-text:hover {
-  background-color: rgb(39, 42, 55);
+  background-color: #323643;
 }
 
 .sender {
@@ -732,8 +789,8 @@ export default {
 .sender .message-text {
   float: left;
   border-radius: 20px 5px 20px 20px;
+  background-color: #318ffa;
 }
-
 
 .receiver {
   /* background-color: #44464c;
@@ -742,7 +799,6 @@ export default {
     border-top-right-radius: 12px;
     border-bottom-right-radius: 12px; */
   justify-content: flex-start;
-
 }
 
 .receiver .message-avatar {
@@ -761,17 +817,24 @@ export default {
   border-radius: 5px 20px 20px 20px;
 }
 
-
 .broadcast-container {
   flex: 1;
   top: 0;
   height: 100%;
   width: 240px;
-  background-color: #313338;
+  background-color: #343947;
   /* #44464c*/
   position: fixed;
   right: 0;
   justify-content: flex-start;
+}
+
+.broadcast-header {
+  padding: 10px;
+  background-color: #2f3241;
+  border-bottom-right-radius: 8px;
+  color: #e0e0e0;
+  font-weight: bold;
 }
 
 input[type="text"] {

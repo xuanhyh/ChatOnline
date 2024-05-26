@@ -1,16 +1,36 @@
 package com.chat.service.impl;
 
+import ch.qos.logback.core.encoder.EchoEncoder;
+import com.chat.common.exception.BaseException;
 import com.chat.mapper.MessageMapper;
 import com.chat.mapper.UserMapper;
 import com.chat.pojo.entity.Message;
 import com.chat.pojo.entity.User;
 import com.chat.service.MessageService;
+import com.opencsv.CSVWriter;
+import com.opencsv.ICSVWriter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @Slf4j
@@ -54,6 +74,44 @@ public class MessageServiceImpl implements MessageService {
     public void updateReadPrivateMessageStatus(Long userId, Long friendId){
         //设置私聊消息已读
         messageMapper.updateReadPrivateMessageStatus(friendId,userId);
+    }
+
+    @Override
+    public ResponseEntity<Resource> downloadPrivateMessage(Long userId, Long friendId){
+        List<Message> messages = selectPrivateMessage(userId, friendId);
+
+        if(messages.isEmpty()){
+            log.info("消息记录为空");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+        }
+        // 根据发送时间排序
+        messages = messages.stream()
+                .sorted((m1, m2) -> m1.getSendTime().compareTo(m2.getSendTime()))
+                .collect(Collectors.toList());
+        StringWriter stringWriter = new StringWriter();
+
+        try(CSVWriter csvWriter = new CSVWriter(stringWriter)){
+            String[] header = {"messageID", "senderId", "receiverId", "text_message", "sendTime"};
+            csvWriter.writeNext(header);
+
+            for (Message message : messages) {
+                String[] data = {message.getId().toString(),
+                        message.getSenderId().toString(),
+                        message.getReceiverId().toString(),
+                        message.getTextMessage(),
+                        message.getSendTime().toString()};
+                csvWriter.writeNext(data);
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        byte[] chatData = stringWriter.toString().getBytes(StandardCharsets.UTF_8);
+        ByteArrayResource resource = new ByteArrayResource(chatData);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=chat_record.csv")
+                .header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 
     @Override
