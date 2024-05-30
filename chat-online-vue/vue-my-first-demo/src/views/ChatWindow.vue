@@ -23,7 +23,7 @@
         <div
           class="friend-list-head-add"
           title="加好友"
-          @click="showAddFriendDialog()"
+          @click="showPopup = true"
         >
           +
         </div>
@@ -64,6 +64,11 @@
 
     <!-- <p>query获取到：{{ userInfo_from_query.name }}</p><br/> -->
     <!-- <p>store获取到：{{ userInfo_from_store.name }}</p> -->
+
+    
+    <transition name="fade">
+      <AddFriend v-if="showPopup" @close="showPopup = false"></AddFriend>
+    </transition>
 
     <!-- 聊天框 -->
     <div
@@ -112,9 +117,28 @@
 
 <script>
 import axios from "axios";
+import AddFriend from './AddFriend'
+import { ref } from 'vue';
 
 export default {
   name: "ChatWithFriend",
+  components: {
+    AddFriend
+  },
+  setup() {
+    const isModalVisible = ref(false);
+    const showModal = () => {
+      isModalVisible.value = true;
+    };
+    const hideModal = () => {
+      isModalVisible.value = false;
+    };
+    return {
+      isModalVisible,
+      showModal,
+      hideModal
+    };
+  },
   created() {
     console.log("ChatWithFriend获取到参数", this.$route.params.userName);
     // this.userInfo_from_query.id=this.$route.query.id;
@@ -152,6 +176,7 @@ export default {
 
   data() {
     return {
+      showPopup: false,
       channels: [
         { name: "私聊", url: require("../assets/私聊.png") },
         { name: "群聊", url: require("../assets/群聊.png") },
@@ -209,7 +234,7 @@ export default {
       chatTo: "寻找或开始新的对话", // dialgo-container顶部显示文字
       // friendClickStyle: "friends", // 好友点击样式
       updateUnreadTimer: null,
-      addFriendDialog: false, // 是否显示添加好友框框
+      // addFriendDialog: false, // 是否显示添加好友框框
       channelSelected: 0,
       expandedGroupIds: [], // 存储已展开的分组的 ID
     };
@@ -602,7 +627,7 @@ export default {
     },
     showAddFriendDialog() {
       console.log("点击加好友按钮成功!!!");
-      this.addFriendDialog = true;
+      // this.addFriendDialog = true;
     },
   },
 };
