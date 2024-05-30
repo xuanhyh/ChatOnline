@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class FriendGroupChangeDTO {
-    private Long memberId;
-    private String GroupName;
+    private Long friendId;
+    private String groupName;
 }

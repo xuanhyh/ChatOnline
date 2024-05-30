@@ -6,12 +6,10 @@ import com.chat.common.exception.BaseException;
 import com.chat.common.exception.FriendExistedException;
 import com.chat.mapper.FriendRequestMapper;
 import com.chat.mapper.UserFriendMapper;
-import com.chat.mapper.UserMapper;
 import com.chat.pojo.dto.FriendGroupChangeDTO;
 import com.chat.pojo.dto.FriendRequestDTO;
-import com.chat.pojo.entity.FriendGroup;
 import com.chat.pojo.entity.FriendRequest;
-import com.chat.pojo.entity.User;
+import com.chat.pojo.entity.UserGrouping;
 import com.chat.service.UserFriendService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -51,6 +49,15 @@ public class UserFriendServiceImpl implements UserFriendService {
     }
 
     @Override
+    public void createANewGrouping(String groupingName){
+        Long userId = BaseContext.getCurrentId();
+        String checkExisted = userFriendMapper.searchUserGrouping(userId, groupingName);
+        if(checkExisted != null){
+            throw new BaseException("分组已存在");
+        }
+        userFriendMapper.createNewGroup(userId, groupingName);
+    }
+    @Override
     public void respongToFriendRequest(Long fromUserId, String status){
         // status分为
         // PENDING 好友请求中
@@ -65,11 +72,6 @@ public class UserFriendServiceImpl implements UserFriendService {
             // 添加进好友表
             friendRequestMapper.addFriends(toUserId, fromUserId);
             friendRequestMapper.addFriendsReverse(toUserId, fromUserId);
-            // 添加好友进入对方的默认分组
-            FriendGroup friendGroup = new FriendGroup(toUserId, fromUserId, "default");
-            userFriendMapper.addFriendToGroup(friendGroup);
-            friendGroup.setUserId(fromUserId); friendGroup.setMemberId(toUserId);
-            userFriendMapper.addFriendToGroup(friendGroup);
         }
     }
 
@@ -77,17 +79,14 @@ public class UserFriendServiceImpl implements UserFriendService {
     public void changeFriendGroup(FriendGroupChangeDTO friendGroupChangeDTO){
         // 当前用户是toUser
         Long userId = BaseContext.getCurrentId();
-        Long memberId = friendGroupChangeDTO.getMemberId();
-        String groupName = friendGroupChangeDTO.getGroupName();
+        Long friendId = friendGroupChangeDTO.getFriendId();
+        String groupingName = friendGroupChangeDTO.getGroupName();
         // 获取当前好友分组
-        String nowGroupName = userFriendMapper.searchFriendGroup(memberId, userId);
-        if(nowGroupName.equals(groupName)){
+        String nowGroupName = userFriendMapper.searchFriendGroup(friendId, userId);
+        if(nowGroupName != null && nowGroupName.equals(groupingName)){
             throw new BaseException("好友已在当前分组");
         }
-        // 更换好友分组
-        FriendGroup friendGroup = new FriendGroup(userId, memberId, groupName);
-        userFriendMapper.addFriendToGroup(friendGroup);
-        friendGroup.setGroupName(nowGroupName);
-        userFriendMapper.deleteFriendFromGroup(friendGroup);
+        // 修改好友分组
+        userFriendMapper.changeFriendGrouping(userId, friendId, groupingName);
     }
 }

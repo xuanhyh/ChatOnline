@@ -51,8 +51,7 @@ public class UserController {
                 jwtProperties.getUserTtl(),
                 claims);
 
-        //这名字(。・ω・。)
-        //咳咳。。。。复制的时候忘记改了，已纠正
+
         UserLoginVO userLoginVO = UserLoginVO.builder() //这就是@Builder的好处
                 .userId(user.getUserId())
                 .userName(user.getUsername())
@@ -125,7 +124,7 @@ public class UserController {
 
     /**
      * 添加好友，目前是根据用户id，有需要的话可以修改为根据用户名
-     * 我测，突然想起来还得对方同意，有点复杂了
+     * 突然想起来还得对方同意，有点复杂了
      * @return
      */
     @PostMapping("/sendFriendRequest")
@@ -177,5 +176,17 @@ public class UserController {
         log.info("修改对好友的分组{}", friendGroupChangeDTO);
         userFriendService.changeFriendGroup(friendGroupChangeDTO);
         return Result.success();
+    }
+    @PostMapping("/createrNewGrouping")
+    public Result createNewGrouping(String groupingName){
+        log.info("新建好友分组：{}",groupingName);
+        userFriendService.createANewGrouping(groupingName);
+        return Result.success();
+    }
+
+    @GetMapping("/getFriendByIdWithGroupingId")
+    public Result getFriendByIdWithGroupingId(Long id){
+        log.info("获取id{}用户的所有好友（带分组id）",id);
+        return Result.success(userService.getFriendByIdWithGroupingId(id));
     }
 }

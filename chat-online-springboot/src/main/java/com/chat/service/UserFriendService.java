@@ -12,6 +12,7 @@ public interface UserFriendService {
 
     List<FriendRequest> getFriendRequest();
 
+    void createANewGrouping(String groupingName);
     void respongToFriendRequest(Long requestId, String status);
 
     void changeFriendGroup(FriendGroupChangeDTO friendGroupChangeDTO);

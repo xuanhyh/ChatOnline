@@ -6,13 +6,12 @@ spring:
     allow-circular-references: true
   datasource:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://47.121.137.215:3306/chat_online #服务器地址
+      url: jdbc:mysql://47.121.137.215:3306/chat_online # 服务器地址
       username: root
-      password: 123456 #服务器mysql密码
+      password: 123456 #服务器数据库密码
 
 mybatis:
   configuration:
-    #开启驼峰命名
     map-underscore-to-camel-case: true
 
 chat:
@@ -24,4 +23,4 @@ chat:
     # 设置前端传递过来的令牌名称
     user-token-name: token
   smms:
-    token: sjFdlyHJgLu1yCnfMRy2bfg88B5EERXb # SM.MS图床
+    token: sjFdlyHJgLu1yCnfMRy2bfg88B5EERXb

@@ -29,6 +29,7 @@
         from user
         where user_id in (select friend_id from user_friend where user_id = #{id})
     </select>
+
     <select id="getByIds" resultType="com.chat.pojo.entity.User">
         select *
         from user
@@ -38,7 +39,15 @@
         </foreach>
     </select>
     <insert id="insertDefaultGroup" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO friend_groups (user_id, group_name)
+        INSERT INTO user_grouping (user_id, group_name)
         VALUES (#{userId}, "default")
     </insert>
+
+<!--为了好友分组做的新接口-->
+    <select id="getFriendByIdWithGroupingId" resultType="com.chat.pojo.entity.UserWithGroupingId">
+        SELECT u.*, uf.grouping_id
+        FROM user u
+                 JOIN user_friend uf ON u.user_id = uf.friend_id
+        WHERE uf.user_id = #{id};
+    </select>
 </mapper>

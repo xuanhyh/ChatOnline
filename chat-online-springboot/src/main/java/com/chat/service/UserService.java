@@ -25,4 +25,5 @@ public interface UserService {
     void updateFriend(UpdateFriendDTO updateFriendDTO);
 
 
+    List<User> getFriendByIdWithGroupingId(Long id);
 }

@@ -85,7 +85,7 @@
           placeholder="输入消息..."
         />
         <!-- @keyup.enter="sendMessage"在键盘按下回车时调用sendMessage函数 -->
-        <button @click="sendMessage">发送</button>
+        <button class="send-button" @click="sendMessage">发送</button>
       </div>
     </div>
 
@@ -531,6 +531,7 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
+  border-left: #374347 solid 1px;
 }
 
 .groups {
@@ -539,10 +540,9 @@ export default {
   /* 使用 flexbox 布局 */
   align-items: center;
   /* 垂直居中 */
-  padding: 8px;
   transition: background-color 0.2s ease;
-  margin-top: 6px;
-  margin-bottom: 2px;
+  padding: 8px 0px 8px 4px; /* 上 右 下 左 */
+  margin: 6px 0px 2px -4px; /* 上 右 下 左 */
 }
 
 .groups:hover {
@@ -555,10 +555,9 @@ export default {
   /* 使用 flexbox 布局 */
   align-items: center;
   /* 垂直居中 */
-  padding: 8px;
   background-color: #5959c9;
-  margin-top: 2px;
-  margin-bottom: 6px;
+  padding: 8px 0px 8px 4px; /* 上 右 下 左 */
+  margin: 2px 0px 6px -4px; /* 上 右 下 左 */
 }
 
 .groups-avatar {
@@ -681,6 +680,7 @@ export default {
   display: flex;
   flex-direction: column;
   /* 垂直排列子元素 */
+  border-left: #3d4e54 solid 1px;
 }
 
 .dialog-header {
@@ -689,6 +689,7 @@ export default {
   border-bottom-left-radius: 8px;
   color: #e0e0e0;
   font-weight: bold;
+  border-bottom: #2c4d5d solid 1px;
 }
 
 .dialog-body {
@@ -706,6 +707,7 @@ export default {
   background-color: #2f3241;
   align-items: center;
   justify-content: space-between;
+  border-top: #2c4d5d solid 1px;
 }
 
 .message {
@@ -835,6 +837,7 @@ export default {
   border-bottom-right-radius: 8px;
   color: #e0e0e0;
   font-weight: bold;
+  border-bottom: #2c4d5d solid 1px;
 }
 
 input[type="text"] {
@@ -845,7 +848,7 @@ input[type="text"] {
   border-radius: 8px;
 }
 
-button {
+.send-button {
   min-width: 80px;
   min-height: 40px;
   width: 10%;
@@ -856,5 +859,17 @@ button {
   border-radius: 3px;
   cursor: pointer;
   margin-right: 20px;
+}
+
+.sidebar-button {
+  min-width: 80px;
+  min-height: 40px;
+  width: 40px;
+  padding: 6px 12px;
+  background-color: #0e9f6f;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
 }
 </style>

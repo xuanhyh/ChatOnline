@@ -108,7 +108,6 @@ public class UserServiceImpl implements UserService {
 
         System.out.println("user内容为："+user.toString());
         userMapper.insert(user);
-        userMapper.insertDefaultGroup(user.getUserId());
     }
 
     @Override
@@ -152,14 +151,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteFriendById(Long friendId) {
-        Long userId = BaseContext.getCurrentId();// 这个不是没用吗 我错了是有用的
+        Long userId = BaseContext.getCurrentId();
         log.info("deleteFriendById里的userId为：{}",userId);
         userFriendMapper.delete(userId, friendId);
     }
 
     @Override
     public void updateFriend(UpdateFriendDTO updateFriendDTO) {
-        Long userId = BaseContext.getCurrentId();// 这个不是没用吗 我错了是有用的
+        Long userId = BaseContext.getCurrentId();
         UserFriend userFriend = new UserFriend();
         BeanUtils.copyProperties(updateFriendDTO, userFriend);
         userFriend.setUserId(userId);
@@ -168,4 +167,9 @@ public class UserServiceImpl implements UserService {
     }
 
 
+
+    @Override
+    public List<User> getFriendByIdWithGroupingId(Long id){
+        return userMapper.getFriendByIdWithGroupingId(id);
+    }
 }

@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class FriendGroup {
+public class Grouping {
     private Long userId;
-    private Long memberId;
-    private String groupName;
+    private Long groupingId;
+    private String groupingName;
 }

@@ -11,8 +11,10 @@
       >
         <img :src="channel.url" :alt="channel.name" />
       </div>
+      <button class="sidebar-button" @click="downloadPrivateMessages">下载聊天记录</button>
       <!-- <button type="button" @click="updateFriendTest()">更新好友信息测试</button> -->
     </div>
+
     <!-- 好友列表 -->
     <div class="friends-list">
       <div class="username-label">{{ userInfo_from_store.name }}</div>
@@ -26,28 +28,37 @@
           +
         </div>
       </div>
-      <div
-        :class="
-          friend.userId === this.now_chat_id ? 'friend-selected' : 'friends'
-        "
-        class="friends-click"
-        v-for="(friend, index) in friends"
-        :key="index"
-        @click="selectFriend(friend.userId, friend.name)"
-      >
-        <div class="avatar-and-badge">
-          <div class="badge" v-if="getUnreadNum(friend.userId) > 0">
-            {{ getUnreadNum(friend.userId) }}
-          </div>
-          <img
-            class="friends-avatar"
-            src="../assets/私聊头像.png"
-            :alt="friend.name"
-          />
+      <div class="grouping-container" v-for="(grouping, index) in groupedFriends">
+        <div
+          class="grouping-bar"
+          :key="grouping.groupingId"
+          @click="toggleGroup(grouping)">
+          <span v-if="grouping.isExpanded">∨</span>
+          <span v-else>∧</span>
+          {{grouping.groupingName}}
         </div>
-        <span class="friends-nickname">{{
-          friend.name + "(" + friend.username + ")"
-        }}</span>
+        <div
+          :class="friend.userId === this.now_chat_id ? 'friend-selected' : 'friends'"
+          class="friends-click"
+          v-if="grouping.isExpanded"
+          v-for="friend in grouping.friends"
+          :key="friend.userId"
+          @click="selectFriend(friend.userId, friend.name)"
+        >
+          <div class="avatar-and-badge">
+            <div class="badge" v-if="getUnreadNum(friend.userId) > 0">
+              {{ getUnreadNum(friend.userId) }}
+            </div>
+            <img
+              class="friends-avatar"
+              src="../assets/私聊头像.png"
+              :alt="friend.name"
+            />
+          </div>
+          <span class="friends-nickname">{{
+            friend.name + "(" + friend.username + ")"
+          }}</span>
+        </div>
       </div>
     </div>
 
@@ -88,14 +99,13 @@
           placeholder="输入消息..."
         />
         <!-- @keyup.enter="sendMessage"在键盘按下回车时调用sendMessage函数 -->
-        <button @click="sendMessage">发送</button>
+        <button class="send-button" @click="sendMessage">发送</button>
       </div>
     </div>
 
     <!-- 在线广播 -->
     <div class="broadcast-container" v-show="showBroadcast">
       <div class="dialog-header">在线广播</div>
-      <button @click="downloadPrivateMessages">下载聊天记录</button>
     </div>
   </div>
 </template>
@@ -114,7 +124,30 @@ export default {
     if (jsonParsed) {
       this.userInfo_from_store = jsonParsed;
       this.getFriendList();
+      this.getGroupingList();
     }
+  },
+  computed: {
+    groupedFriends() {
+      const grouped = this.groupings.map(grouping => {
+        return {
+          ...grouping,//...将 grouping 对象中的所有键值对复制到新对象中
+          isExpanded: true, // 默认展开
+          friends: this.friends.filter(friend => friend.groupingId === grouping.groupingId),
+          //过滤 friends 数组，只保留 groupingId 与当前分组对象的 groupingId 相匹配的朋友。
+        };
+      });
+          // 提取没有分组的朋友
+      const ungroupedFriends = {
+        userId: this.userInfo_from_store.userId,
+        groupingId: -1,
+        groupingName: '未分组',
+        isExpanded: true, // 默认展开
+        friends: this.friends.filter(friend => !friend.groupingId)
+      };
+
+      return [...grouped, ungroupedFriends];
+    },
   },
 
   data() {
@@ -140,6 +173,9 @@ export default {
           */
       ],
       friends: [],
+      groupings: [
+        //{userId:,groupingId:,groupingName:}
+      ],
       userInfo_from_query: {
         id: 0,
         userName: "no",
@@ -175,6 +211,7 @@ export default {
       updateUnreadTimer: null,
       addFriendDialog: false, // 是否显示添加好友框框
       channelSelected: 0,
+      expandedGroupIds: [], // 存储已展开的分组的 ID
     };
   },
   props: {},
@@ -255,7 +292,7 @@ export default {
     getFriendList() {
       axios({
         method: "get",
-        url: "http://localhost:8080/api/user/friend",
+        url: "http://localhost:8080/api/user/getFriendByIdWithGroupingId",
         headers: {
           token: this.userInfo_from_store.token,
         },
@@ -280,6 +317,38 @@ export default {
             this.errorMessage = "请求失败，请重试。";
           }
         });
+    },
+    getGroupingList(){
+      axios({
+        methods:"get",
+        url:"http://localhost:8080/api/grouping/getAllGrouping",
+        headers:{
+          token:this.userInfo_from_store.token,
+        },
+        params:{
+          userId:this.userInfo_from_store.userId,
+        }
+      })
+      .then(response=>{
+        console.log("获取分组列表");
+        console.log(response.data);
+        const groupingList=response.data.data;
+        groupingList.forEach((grouping) => {
+          this.groupings.push(grouping)
+        });
+        console.log("测试输出");
+        this.groupings.forEach((grouping)=>{
+          console.log(grouping);
+        })
+      })
+      .catch((error)=>{
+        console.error("好友分组请求失败", error);
+        if (error.response) {
+          this.errorMessage = `好友分组请求失败，状态码：${error.response.status}`;
+        } else {
+          this.errorMessage = "好友分组请求失败，请重试。";
+        }
+      })
     },
     updateUnreadMessageNum() {
       console.log("查询新消息");
@@ -475,6 +544,14 @@ export default {
         console.error('下载聊天记录失败:', error);
       });
     },
+    toggleGroup(grouping) {
+      // 切换分组的展开状态
+      if (grouping) {
+        grouping.isExpanded = !grouping.isExpanded;
+      }
+      console.log(this.groupedFriends.find(g => g.groupingId === grouping.groupingId));
+      this.$forceUpdate(); // 强制更新组件，不加没效果
+    },
     selectFriend(id, name) {
       this.now_chat_id = id;
       this.now_chat_friend_name = name;
@@ -617,6 +694,7 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
+  border-left: #374347 solid 1px;
 }
 
 .friends {
@@ -625,10 +703,9 @@ export default {
   /* 使用 flexbox 布局 */
   align-items: center;
   /* 垂直居中 */
-  padding: 8px;
   transition: background-color 0.2s ease;
-  margin-top: 6px;
-  margin-bottom: 2px;
+  padding: 8px 0px 8px 4px; /* 上 右 下 左 */
+  margin: 6px 0px 2px -4px; /* 上 右 下 左 */
 }
 
 .friends:hover {
@@ -641,10 +718,9 @@ export default {
   /* 使用 flexbox 布局 */
   align-items: center;
   /* 垂直居中 */
-  padding: 8px;
   background-color: #5959c9;
-  margin-top: 2px;
-  margin-bottom: 6px;
+  padding: 8px 0px 8px 4px; /* 上 右 下 左 */
+  margin: 2px 0px 6px -4px; /* 上 右 下 左 */
 }
 
 .friends-avatar {
@@ -767,6 +843,7 @@ export default {
   display: flex;
   flex-direction: column;
   /* 垂直排列子元素 */
+  border-left: #3d4e54 solid 1px;
 }
 
 .dialog-header {
@@ -775,6 +852,7 @@ export default {
   border-bottom-left-radius: 8px;
   color: #e0e0e0;
   font-weight: bold;
+  border-bottom: #2c4d5d solid 1px;
 }
 
 .dialog-body {
@@ -792,6 +870,7 @@ export default {
   background-color: #2f3241;
   align-items: center;
   justify-content: space-between;
+  border-top: #2c4d5d solid 1px;
 }
 
 .message {
@@ -921,6 +1000,7 @@ export default {
   border-bottom-right-radius: 8px;
   color: #e0e0e0;
   font-weight: bold;
+  border-bottom: #2c4d5d solid 1px;
 }
 
 input[type="text"] {
@@ -931,7 +1011,7 @@ input[type="text"] {
   border-radius: 8px;
 }
 
-button {
+.send-button {
   min-width: 80px;
   min-height: 40px;
   width: 10%;
@@ -942,5 +1022,40 @@ button {
   border-radius: 3px;
   cursor: pointer;
   margin-right: 20px;
+}
+
+.sidebar-button {
+  min-width: 64px;
+  min-height: 48px;
+  height: 48px;
+  width: 64px;
+  padding: 6px 2px;
+  background-color: #0e9f6f;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.grouping-container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  left:0;
+}
+
+.grouping-bar {
+  width: calc(100% - 20px);
+  height: 24px;
+  background-color: #3792fb;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  padding: 0 4px;
+  margin: 8px 20px 8px 0px; /* 上 右 下 左 */
+  font-weight: bold;
+  color: rgb(50, 50, 50);
 }
 </style>

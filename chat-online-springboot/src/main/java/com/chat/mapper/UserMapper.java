@@ -50,4 +50,7 @@ public interface UserMapper {
     List<User> getByIds(List<Long> userIdList);
 
     void insertDefaultGroup(Long userId);
+
+    //为了好友分组新做的接口
+    List<User> getFriendByIdWithGroupingId(Long id);
 }

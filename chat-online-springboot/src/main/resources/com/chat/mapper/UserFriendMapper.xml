@@ -17,28 +17,28 @@
         where (user_id = #{userId} and friend_id = #{friendId})
               or (user_id = #{friendId} and friend_id = #{userId})
     </delete>
-    <insert id="createNewGroup" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO friend_groups(user_id, group_name)
-        VALUES (#{userId}, #{groupName})
+    <insert id="createNewGroup" useGeneratedKeys="true">
+        INSERT INTO user_grouping(user_id, grouping_name)
+        VALUES (#{userId}, #{groupingName})
     </insert>
-    <insert id="addFriendToGroup">
-        INSERT INTO friend_group_members(group_id, member_id)
-        SELECT id, #{memberId}
-        FROM friend_groups
-        WHERE user_id = #{userId} and group_name = #{groupName}
-    </insert>
-    <delete id="deleteFriendFromGroup">
-        DELETE FROM friend_group_members
-        WHERE group_id IN (
-            SELECT id
-            FROM friend_groups
-            WHERE user_id = #{userId} AND group_name = #{groupName}
-        )
-          AND member_id = #{memberId}
-    </delete>
+    <update id="changeFriendGrouping">
+        update user_friend
+        set grouping_id = (
+            SELECT grouping_id
+            FROM user_grouping
+            WHERE user_id=#{userId} and grouping_name=#{groupingName}
+            )
+        WHERE user_id = #{userId} and friend_id = #{friendId}
+    </update>
     <select id="searchFriendGroup">
-        SELECT group_name
-        FROM friend_groups fgs, friend_group_members fgm
-        WHERE fgs.id = fgm.group_id and fgm.member_id = #{fromUserId} and fgs.user_id = #{toUserId}
+        SELECT grouping_name
+        FROM user_grouping ug, user_friend uf
+        WHERE uf.user_id = #{toUserId} and uf.friend_id = #{fromUserId}
+          and uf.grouping_id = ug.grouping_id
+    </select>
+    <select id="searchUserGrouping">
+        SELECT grouping_name
+        FROM user_grouping ug
+        WHERE ug.user_id = #{userId} and ug.grouping_name = #{groupingName}
     </select>
 </mapper>
