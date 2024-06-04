@@ -15,7 +15,7 @@ import java.util.Properties;
 import java.util.Random;
 
 public class MailUtil{
-    private String fromEmail = "3295320346@qq.com"; //发送验证码的邮箱
+    private String fromEmail = "3295320346@qq.com";
     private String fromEmailPw = "tkcswpodkhskdaii";
     private String myEmailSMTPHost = "smtp.qq.com";
     private Properties properties; // 用于参数配置

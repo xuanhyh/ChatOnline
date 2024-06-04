@@ -1,12 +1,16 @@
 package com.chat.service.impl;
 
 import com.chat.common.constant.MemberPermissionConstant;
+import com.chat.common.constant.MessageConstant;
 import com.chat.common.context.BaseContext;
+import com.chat.common.exception.UserInGroupException;
 import com.chat.mapper.GroupMapper;
 import com.chat.mapper.GroupMemberMapper;
+import com.chat.mapper.GroupRequestMapper;
 import com.chat.mapper.UserMapper;
 import com.chat.pojo.entity.Group;
 import com.chat.pojo.entity.GroupMember;
+import com.chat.pojo.entity.GroupRequest;
 import com.chat.pojo.entity.User;
 import com.chat.pojo.vo.GroupSearchVO;
 import com.chat.pojo.vo.UserSearchVO;
@@ -31,6 +35,9 @@ public class GroupServiceImpl implements GroupService {
 
     @Autowired
     UserMapper userMapper;
+
+    @Autowired
+    GroupRequestMapper groupRequestMapper;
 
     @Override
     public List<GroupSearchVO> searchGroup(String groupName) {
@@ -102,6 +109,35 @@ public class GroupServiceImpl implements GroupService {
             }
         }
 
+    }
+
+    @Override
+    public Group getGroupInfoByGroupId(Long groupId){
+        return groupMapper.getById(groupId);
+    }
+
+    @Override
+    public void joinGroup(Long userId, Long groupId) {
+        // 首先查一查该用户是否已经在群里
+        GroupMember groupMember = groupMemberMapper.checkUserInGroup(userId, groupId);
+        if(groupMember!=null){
+            // 说明已经在群里
+            throw new UserInGroupException(MessageConstant.UserInGroup);
+        }
+
+        // 到这说明用户不在群里，就在group_request表中插入一条记录表示加群请求
+        // 首先查一查群主是谁
+        // status分为
+        // PENDING 请求中
+        // ACCEPT 接受请求
+        // REJECT 拒绝请求
+        Long creatorId = groupMemberMapper.getCreator(groupId);
+        GroupRequest groupRequest = new GroupRequest();
+        groupRequest.setGroupId(groupId);
+        groupRequest.setGroupCreatorId(creatorId);
+        groupRequest.setFromUserId(userId);
+        groupRequest.setStatus("PENDING");
+        groupRequestMapper.insert(groupRequest);
     }
 
 

@@ -6,17 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
-
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GroupSearchVO implements Serializable {
+public class GroupRequestVO implements Serializable {
+    private Long id;
+    private Long fromUserId;
     private Long groupId;
-    private String groupName;
-    private String avatarUrl;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
 }

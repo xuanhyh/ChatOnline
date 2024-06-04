@@ -38,10 +38,10 @@
             #{Id}
         </foreach>
     </select>
-    <insert id="insertDefaultGroup" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO user_grouping (user_id, group_name)
-        VALUES (#{userId}, "default")
-    </insert>
+<!--    <insert id="insertDefaultGroup" useGeneratedKeys="true" keyProperty="id">-->
+<!--        INSERT INTO user_grouping (user_id, group_name)-->
+<!--        VALUES (#{userId}, "default")-->
+<!--    </insert>-->
 
 <!--为了好友分组做的新接口-->
     <select id="getFriendByIdWithGroupingId" resultType="com.chat.pojo.entity.UserWithGroupingId">

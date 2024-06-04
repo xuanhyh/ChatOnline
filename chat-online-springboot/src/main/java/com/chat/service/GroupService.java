@@ -17,4 +17,8 @@ public interface GroupService {
 
     int dissolveGroup(Long userId,Long groupId);
 
+    Group getGroupInfoByGroupId(Long groupId);
+
+    void joinGroup(Long userId, Long groupId);
+
 }

@@ -3,14 +3,14 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.chat.mapper.FriendRequestMapper">
     <insert id="insertFriendReuqest" useGeneratedKeys="true" keyProperty="id">
-        insert into friend_request (from_user_id, to_user_id, send_time, status)
-        values (#{fromUserId}, #{toUserId}, #{time}, #{status})
+        insert into friend_request (from_user_id, to_user_id, from_user_username, from_user_name, send_time, status)
+        values (#{fromUserId}, #{toUserId}, #{fromUserUserName}, #{fromUserName}, #{sendTime}, #{status})
     </insert>
 
     <select id="getUserById" resultType="com.chat.pojo.entity.FriendRequest">
         SELECT *
         FROM friend_request
-        WHERE to_user_id = #{toUserId}
+        WHERE to_user_id = #{toUserId} and status = "PENDING"
     </select>
 
     <update id="updateFriendRequestStatus">

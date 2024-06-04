@@ -51,7 +51,8 @@ public class UserController {
                 jwtProperties.getUserTtl(),
                 claims);
 
-
+        //这名字(。・ω・。)
+        //咳咳。。。。复制的时候忘记改了，已纠正
         UserLoginVO userLoginVO = UserLoginVO.builder() //这就是@Builder的好处
                 .userId(user.getUserId())
                 .userName(user.getUsername())
@@ -124,7 +125,7 @@ public class UserController {
 
     /**
      * 添加好友，目前是根据用户id，有需要的话可以修改为根据用户名
-     * 突然想起来还得对方同意，有点复杂了
+     * 我测，突然想起来还得对方同意，有点复杂了
      * @return
      */
     @PostMapping("/sendFriendRequest")
@@ -133,13 +134,16 @@ public class UserController {
         userFriendService.sendFriendRequest(friendRequestDTO);
         return Result.success();
     }
-    @GetMapping("/friendRequests")
+    @GetMapping("/getFriendRequests")
     public Result<?> getFriendRequests(){
+        log.info("获取好友请求");
         List<FriendRequest> list = userFriendService.getFriendRequest();
         return Result.success(list);
     }
     @PostMapping("/respondToFriendRequest")
-    public Result respongToFriendRequest(Long fromUserId, String status){
+    public Result respongToFriendRequest(@RequestBody Map<String, String> requestBody){
+        Long fromUserId = Long.parseLong(requestBody.get("fromUserId"));
+        String status = requestBody.get("status");
         userFriendService.respongToFriendRequest(fromUserId, status);
         return Result.success();
     }

@@ -6,7 +6,6 @@
         class="left-icon"
         v-for="(channel, index) in channels"
         :key="index"
-        :class="{ 'channel-selected': channelSelected === index }"
         @click="selectChannel(channel)"
       >
         <img :src="channel.url" :alt="channel.name" />
@@ -20,7 +19,7 @@
         <div
           class="group-list-head-add"
           title="加好友"
-          @click="showAddGroupDialog()"
+          @click="showPopup = true"
         >
           +
         </div>
@@ -50,6 +49,11 @@
 
     <!-- <p>query获取到：{{ userInfo_from_query.name }}</p><br/> -->
     <!-- <p>store获取到：{{ userInfo_from_store.name }}</p> -->
+
+    
+    <transition name="fade">
+      <AddGroup v-if="showPopup" @close="showPopup = false"></AddGroup>
+    </transition>
 
     <!-- 聊天框 -->
     <div
@@ -98,9 +102,13 @@
 
 <script>
 import axios from "axios";
+import AddGroup from "./AddGroup.vue"
 
 export default {
   name: "ChatWithGroup",
+  components: {
+    AddGroup
+  },
   created() {
     console.log("ChatWithGroup获取到参数", this.$route.params.userName);
     // this.userInfo_from_query.id=this.$route.query.id;
@@ -116,10 +124,12 @@ export default {
 
   data() {
     return {
+      showPopup: false,
       channels: [
         { name: "私聊", url: require("../assets/私聊.png") },
         { name: "群聊", url: require("../assets/群聊.png") },
-        { name: "Channel 2", url: require("../assets/探索.png") },
+        { name: "探索", url: require("../assets/探索.png") },
+        { name: "管理", url: require("../assets/管理.png") },
       ],
       groups: [
         //  { "groupId": 1,"groupName": "聊天交友群","createTime": ,"updateTime": }
@@ -306,6 +316,11 @@ export default {
           path: "/chatWithFriend/" + this.userInfo_from_store.userName.userName,
         });
       }
+      else if (channel.name === "管理") {
+        this.$router.push({
+          path: "/Management/" + this.userInfo_from_store.userName.userName,
+        });
+      }
       this.now_chat_group_id = 0;
     },
     resetMiddle() {
@@ -437,10 +452,6 @@ export default {
       );
       return message ? message.unreadNum : 0;
     },
-    showAddGroupDialog() {
-      console.log("点击加好友按钮成功!!!");
-      this.addGroupDialog = true;
-    },
   },
 };
 </script>
@@ -457,8 +468,6 @@ export default {
 
 .sidebar {
   position: fixed;
-  top: 0;
-  left: 0;
   width: 80px;
   /* 调整宽度 */
   height: 100%;
@@ -659,13 +668,17 @@ export default {
   margin: 10px 10px;
   padding: 0;
   border-radius: 5px;
-  background-color: #d8d9d8;
+  background-color: #0eb67e;
   font-size: 21px;
   line-height: 27px;
   text-align: center;
   color: #595959;
   font-weight: 200;
   cursor: pointer;
+}
+
+.group-list-head-add:hover {
+  background-color: #0e9f6f;
 }
 
 .dialog-container {

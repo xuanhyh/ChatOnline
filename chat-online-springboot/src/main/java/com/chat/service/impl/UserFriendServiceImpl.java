@@ -30,7 +30,9 @@ public class UserFriendServiceImpl implements UserFriendService {
     public void sendFriendRequest(FriendRequestDTO friendRequestDTO){
         // 发送添加好友请求
         Long fromUserId = BaseContext.getCurrentId();
-        if(fromUserId == friendRequestDTO.getToUserId()){
+        Long toUserId = friendRequestDTO.getToUserId();
+        Long friendId = friendRequestMapper.checkFriendExisted(fromUserId, toUserId);
+        if(fromUserId == toUserId || friendId != null){
             throw new FriendExistedException(MessageConstant.FRIENF_EXISTED);
         }
         FriendRequest friendRequest = new FriendRequest();

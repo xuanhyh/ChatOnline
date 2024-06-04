@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
      * @param ex
      * @return
      */
-
+    //这个有用吗？
     //它设计出来的作用应该是当username重复的时候，给前端提醒一下，先留着用不到就删除
     @ExceptionHandler
     public Result exceptionHandler(SQLIntegrityConstraintViolationException ex){

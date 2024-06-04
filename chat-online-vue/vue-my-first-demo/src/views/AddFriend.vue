@@ -6,8 +6,8 @@
       <button @click="handleSelect" class="search-button">查找用户</button>
     </div>
 
-    <!-- <div v-if="userInfoShow" class="user-card"> -->
-    <div v-if="true" class="user-card">
+    <div v-if="userInfoShow" class="user-card">
+    <!-- <div v-if="true" class="user-card"> -->
       <div class="avatar-and-point">
         <img :src="this.userInfo.avatarUrl ? this.userInfo.avatarUrl : this.defaultAvatar" alt="用户头像" class="avatar">
         <div :class="userInfo.state === 0 ? 'online' : 'not-online' "></div>
@@ -82,8 +82,8 @@ export default {
         this.response = response.data;
         console.log(this.response.code);
       } catch (error) {
-        console.error('请求失败', error);
-        this.errorMessage='请求失败'
+        console.error('查找失败', error);
+        this.errorMessage='查找失败'
       }
       if (this.response.code === 1) {
         this.userInfoShow = true;
@@ -103,8 +103,9 @@ export default {
       const hours = now.getHours().toString().padStart(2, '0');
       const minutes = now.getMinutes().toString().padStart(2, '0');
       const seconds = now.getSeconds().toString().padStart(2, '0');
-      this.addFriend.time = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-
+      this.addFriend.sendTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      this.addFriend.fromUserUserName = this.userInfo_from_store.userName;
+      this.addFriend.fromUserName = this.userInfo_from_store.name;
       axios({
         method: "post",
         url: "http://localhost:8080/api/user/sendFriendRequest",
@@ -133,7 +134,7 @@ export default {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: #513cee;
+  background-color: #5947df;
   color: #ffffff;
   padding: 20px;
   border-radius: 20px;
@@ -175,6 +176,7 @@ export default {
   background-color: rgba(201, 198, 229, 0.1);
   padding: 10px;
   border-radius: 10px;
+  margin: 8px 0;
 }
 
 .avatar {
@@ -214,7 +216,7 @@ export default {
 
 .close-button {
   padding: 5px 10px;
-  background-color: #ff2828;
+  background-color: #e44141;
   color: #ffffff;
   border: none;
   border-radius: 5px;

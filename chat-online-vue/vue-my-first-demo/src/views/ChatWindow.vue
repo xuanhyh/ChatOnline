@@ -6,12 +6,18 @@
         class="left-icon"
         v-for="(channel, index) in channels"
         :key="index"
-        :class="{ 'channel-selected': channelSelected === index }"
         @click="selectChannel(channel)"
       >
         <img :src="channel.url" :alt="channel.name" />
       </div>
       <button class="sidebar-button" @click="downloadPrivateMessages">下载聊天记录</button>
+      <div 
+        class="sidebar-button"
+        title="好友通知"
+        @click="showFriendRequests = true"
+      >
+        好友通知
+      </div>
       <!-- <button type="button" @click="updateFriendTest()">更新好友信息测试</button> -->
     </div>
 
@@ -111,6 +117,7 @@
     <!-- 在线广播 -->
     <div class="broadcast-container" v-show="showBroadcast">
       <div class="dialog-header">在线广播</div>
+      <FriendRequests/>
     </div>
   </div>
 </template>
@@ -118,26 +125,13 @@
 <script>
 import axios from "axios";
 import AddFriend from './AddFriend'
-import { ref } from 'vue';
+import FriendRequests from './FriendRequests'
 
 export default {
   name: "ChatWithFriend",
   components: {
-    AddFriend
-  },
-  setup() {
-    const isModalVisible = ref(false);
-    const showModal = () => {
-      isModalVisible.value = true;
-    };
-    const hideModal = () => {
-      isModalVisible.value = false;
-    };
-    return {
-      isModalVisible,
-      showModal,
-      hideModal
-    };
+    AddFriend,
+    FriendRequests,
   },
   created() {
     console.log("ChatWithFriend获取到参数", this.$route.params.userName);
@@ -177,10 +171,12 @@ export default {
   data() {
     return {
       showPopup: false,
+      showFriendRequests: false,
       channels: [
         { name: "私聊", url: require("../assets/私聊.png") },
         { name: "群聊", url: require("../assets/群聊.png") },
-        { name: "Channel 2", url: require("../assets/探索.png") },
+        { name: "探索", url: require("../assets/探索.png") },
+        { name: "管理", url: require("../assets/管理.png") },
       ],
       friends: [
         /*{
@@ -197,7 +193,6 @@ export default {
           }
           */
       ],
-      friends: [],
       groupings: [
         //{userId:,groupingId:,groupingName:}
       ],
@@ -442,6 +437,11 @@ export default {
           path: "/chatWithGroup/" + this.userInfo_from_store.userName,
         });
       }
+      else if (channel.name === "管理") {
+        this.$router.push({
+          path: "/Management/" + this.userInfo_from_store.userName.userName,
+        });
+      }
       this.now_chat_id = 0;
     },
     // addKeyValuePairForUnreadMessage(key, value) {
@@ -625,10 +625,6 @@ export default {
       );
       return message ? message.unreadNum : 0;
     },
-    showAddFriendDialog() {
-      console.log("点击加好友按钮成功!!!");
-      // this.addFriendDialog = true;
-    },
   },
 };
 </script>
@@ -645,8 +641,6 @@ export default {
 
 .sidebar {
   position: fixed;
-  top: 0;
-  left: 0;
   width: 80px;
   /* 调整宽度 */
   height: 100%;
@@ -847,13 +841,17 @@ export default {
   margin: 10px 10px;
   padding: 0;
   border-radius: 5px;
-  background-color: #d8d9d8;
+  background-color: #0eb67e;
   font-size: 21px;
   line-height: 27px;
   text-align: center;
   color: #595959;
   font-weight: 200;
   cursor: pointer;
+}
+
+.friend-list-head-add:hover {
+    background-color: #0e9f6f;
 }
 
 .dialog-container {

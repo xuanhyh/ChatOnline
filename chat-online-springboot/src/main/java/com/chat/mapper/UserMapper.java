@@ -37,8 +37,8 @@ public interface UserMapper {
         verification_code = VALUES(verification_code)""")
     void updateVerifyCode(String email,String verifyCode);
 
-    @Insert("insert into user (user_id, name, username, password, sex, avatar_url, email, state, create_time, update_time) " +
-            "values (#{userId}, #{name}, #{username}, #{password}, #{sex}, #{avatarUrl}, #{email}, #{state}, #{createTime}, #{updateTime})")
+    @Insert("insert into user (name, username, password, sex, avatar_url, email, state, create_time, update_time) " +
+            "values (#{name}, #{username}, #{password}, #{sex}, #{avatarUrl}, #{email}, #{state}, #{createTime}, #{updateTime})")
     @AutoFill(value = OperationType.INSERT)
     void insert(User user);
 

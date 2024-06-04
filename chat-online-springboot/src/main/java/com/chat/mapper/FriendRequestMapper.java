@@ -17,6 +17,9 @@ public interface FriendRequestMapper {
     // 查询当前用户的未处理所有好友请求
     List<FriendRequest> getUserById(Long toUserId);
 
+    // 检查好友是否存在
+    @Select("SELECT friend_id from user_friend where user_id = #{userId} and friend_id = #{friendId}")
+    Long checkFriendExisted(Long userId, Long friendId);
     void updateFriendRequestStatus(Long toUserId, Long fromUserId, String status);
 
     // 查询用户请求是否存在

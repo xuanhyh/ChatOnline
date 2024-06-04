@@ -24,4 +24,8 @@ export default {
   color: #2c3e50;
   /* margin-top: 60px; */
 }
+
+body {
+	margin:0; /*消除默认有的左和上的margin */
+}
 </style>

@@ -5,15 +5,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Group implements Serializable {
+public class GroupRequest implements Serializable {
+    private Long id;
+    private Long fromUserId;
     private Long groupId;
-    private String groupName;
-    private String avatarUrl;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
+    private Long groupCreatorId;
+    private String status;
 }
