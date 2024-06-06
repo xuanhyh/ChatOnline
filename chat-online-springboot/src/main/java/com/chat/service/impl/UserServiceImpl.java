@@ -151,14 +151,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteFriendById(Long friendId) {
-        Long userId = BaseContext.getCurrentId();
+        Long userId = BaseContext.getCurrentId();// 这个不是没用吗 我错了是有用的
         log.info("deleteFriendById里的userId为：{}",userId);
         userFriendMapper.delete(userId, friendId);
     }
 
     @Override
     public void updateFriend(UpdateFriendDTO updateFriendDTO) {
-        Long userId = BaseContext.getCurrentId();
+        Long userId = BaseContext.getCurrentId();// 这个不是没用吗 我错了是有用的
         UserFriend userFriend = new UserFriend();
         BeanUtils.copyProperties(updateFriendDTO, userFriend);
         userFriend.setUserId(userId);

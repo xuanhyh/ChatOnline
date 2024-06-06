@@ -3,7 +3,7 @@ package com.chat.service.impl;
 import com.chat.common.constant.MemberPermissionConstant;
 import com.chat.common.constant.MessageConstant;
 import com.chat.common.context.BaseContext;
-import com.chat.common.exception.UserInGroupException;
+import com.chat.common.exception.*;
 import com.chat.mapper.GroupMapper;
 import com.chat.mapper.GroupMemberMapper;
 import com.chat.mapper.GroupRequestMapper;
@@ -27,6 +27,8 @@ import java.util.List;
 
 @Service
 public class GroupServiceImpl implements GroupService {
+
+
     @Autowired
     GroupMapper groupMapper;
 
@@ -138,6 +140,45 @@ public class GroupServiceImpl implements GroupService {
         groupRequest.setFromUserId(userId);
         groupRequest.setStatus("PENDING");
         groupRequestMapper.insert(groupRequest);
+    }
+
+    @Override
+    public void exitGroup(Long userId, Long groupId) {
+        // 首先查询这个人是否在群内以及在这个群内的权限是什么
+        GroupMember groupMember = groupMemberMapper.checkUserInGroup(userId, groupId);
+        if(groupMember == null){
+            throw new UserNotInGroupException("群里不存在该用户！");
+        }
+        if(groupMember.getMemberPermission().equals(MemberPermissionConstant.CREATOR)){
+            // 说明这个人是群主，不能退出群
+            throw new UserIsCreatorException("当前用户为群主，不能退出群！");
+        }
+        groupMemberMapper.deleteMemberById(groupId, userId);
+
+    }
+
+    @Override
+    public void changeCreator(Long groupId, Long userId, String username) {
+        // 首先检查当前用户是不是群主
+        GroupMember groupMember = groupMemberMapper.checkUserInGroup(userId, groupId);
+        if(!groupMember.getMemberPermission().equals(MemberPermissionConstant.CREATOR)){
+            // 说明这个人不是群主
+            throw new UserIsNotCreatorException("当前用户不是群主！");
+        }
+        // 再检查username是否在群里
+        User user = userMapper.getByUsername(username);
+        if(user==null){
+            throw new AccountNotFoundException("不存在用户名为"+username+"的用户！");
+        }
+        Long newCreatorId = user.getUserId();
+        GroupMember newCreator = groupMemberMapper.checkUserInGroup(newCreatorId, groupId);
+        if(newCreator==null){
+            // 说明群里没有这个人
+            throw new UserNotInGroupException("群里不存在用户名为"+username+"的用户！");
+        }
+        groupMemberMapper.updatePermission(groupId, userId, MemberPermissionConstant.ORDINARY_MEMBERS);
+        groupMemberMapper.updatePermission(groupId, newCreatorId, MemberPermissionConstant.CREATOR);
+
     }
 
 

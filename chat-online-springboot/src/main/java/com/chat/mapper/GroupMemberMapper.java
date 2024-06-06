@@ -1,10 +1,7 @@
 package com.chat.mapper;
 
 import com.chat.pojo.entity.GroupMember;
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -32,4 +29,11 @@ public interface GroupMemberMapper {
 
     @Select("select member_id from group_member where group_id = #{groupId} and member_permission = 0;")
     Long getCreator(Long groupId);
+
+
+    @Delete("delete from group_member where member_id = #{userId} and group_id = #{groupId}")
+    void deleteMemberById(Long groupId, Long userId);
+
+    @Update("update group_member set member_permission = #{i} where group_id = #{groupId} and member_id = #{userId}")
+    void updatePermission(Long groupId, Long userId, Integer i);
 }

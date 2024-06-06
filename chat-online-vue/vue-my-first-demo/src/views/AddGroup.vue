@@ -17,7 +17,7 @@
           <p>群名：{{ groupInfoById.groupName }}</p>
           <p>群ID：{{ groupInfoById.groupId }}</p>
         </div>
-        <button @click="handleAddFriend" class="add-group-button">添加</button>
+        <button @click="handleAddGroup(groupInfoById.groupId)" class="add-group-button">添加</button>
       </div>
   
       <div class="errorMessage">
@@ -45,7 +45,7 @@
           <p>群名：{{ groupInfo.groupName }}</p>
           <p>群ID：{{ groupInfo.groupId }}</p>
         </div>
-        <button @click="handleAddFriend" class="add-group-button">添加</button>
+        <button @click="handleAddGroup(groupInfo.groupId)" class="add-group-button">添加</button>
       </div>
   
       <div class="errorMessage">
@@ -68,7 +68,7 @@
     data() {
       return {
         searchById: true,
-        groupId: 0,
+        groupId: null,
         groupName: '',
         response: null,
         groupInfoByIdShow: false,
@@ -76,7 +76,7 @@
         errorMessage: '',
         defaultAvatar: require('../assets/群聊头像.png'),
         groupInfoById: {
-            groupId: 0,
+            groupId: null,
             groupName:'无',
             avatarUrl: null,
         },
@@ -98,7 +98,7 @@
     methods: {
       async handleSelectByID() {
         console.log(this.groupId);
-        if(this.groupId==0)
+        if(this.groupId==null)
         {
           this.errorMessage='请输入群号';
           return;
@@ -174,33 +174,35 @@
           console.log(this.response.code);
         }
       },
-      handleAddFriend() {
-        this.addFriend.toGroupId = this.groupInfoById.groupId;
+      handleAddGroup(groupId) {
+        // this.addFriend.toGroupId = this.groupInfoById.groupId;
   
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = (now.getMonth() + 1).toString().padStart(2, '0');
-        const day = now.getDate().toString().padStart(2, '0');
-        const hours = now.getHours().toString().padStart(2, '0');
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const seconds = now.getSeconds().toString().padStart(2, '0');
-        this.addFriend.time = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        // const now = new Date();
+        // const year = now.getFullYear();
+        // const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        // const day = now.getDate().toString().padStart(2, '0');
+        // const hours = now.getHours().toString().padStart(2, '0');
+        // const minutes = now.getMinutes().toString().padStart(2, '0');
+        // const seconds = now.getSeconds().toString().padStart(2, '0');
+        // this.addFriend.time = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   
         axios({
           method: "post",
-          url: "http://localhost:8080/api/group/",
+          url: "http://localhost:8080/api/group/joinGroup",
           headers: {
             'Content-Type': 'application/json',
             'token': this.userInfo_from_store.token
           },
-          data: this.addFriend
+          params:{
+            groupId: groupId,
+          } 
         })
         .then(res => {
           console.log("收到响应" + res);
           if (res.data.code === 1) {
-            alert('发送好友请求成功！');
+            alert('发送加群请求成功！');
           } else {
-            alert('发送好友请求失败：' + res.data.msg);
+            alert('发送加群请求失败：' + res.data.msg);
           }
         });
       }

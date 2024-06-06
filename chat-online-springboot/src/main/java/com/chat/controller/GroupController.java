@@ -154,4 +154,32 @@ public class GroupController {
         return Result.success(list);
     }
 
+
+    /**
+     *
+     * 用户退出某个群
+     *
+     */
+    @GetMapping("/exitGroup")
+    public Result exitGroup(Long groupId){
+        Long userId = BaseContext.getCurrentId();
+        log.info("id为{}的用户退出id为{}的群", userId, groupId);
+        groupService.exitGroup(userId, groupId);
+        return Result.success();
+    }
+
+    /**
+     *
+     * 群主把群主的位置交给别人
+     * 原群主会成为普通群员
+     */
+    @GetMapping("/changeCreator")
+    public Result changeCreator(Long groupId, String username){
+        Long userId = BaseContext.getCurrentId();
+        log.info("id为{}的群的群主（id为{}）想要把群主的位置交给用户名为{}的群员", groupId, userId, username);
+        groupService.changeCreator(groupId, userId, username);
+        return Result.success();
+
+    }
+
 }

@@ -6,9 +6,9 @@ spring:
     allow-circular-references: true
   datasource:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://47.121.137.215:3306/chat_online # 数据库服务器地址
+      url: jdbc:mysql://47.121.137.215:3306/chat_online #服务器地址
       username: root
-      password: 123456 # 数据库密码
+      password: 123456 # 服务器密码
 
 mybatis:
   configuration:

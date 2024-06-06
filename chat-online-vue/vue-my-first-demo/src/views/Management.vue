@@ -18,47 +18,68 @@
             <div class="manager-body">
                 <div v-if="labelSelectedLabel == '好友'">
                     好友页面
-                    <div class="friends-grid">
-                        <div v-for="friend in friends"
-                            :class="friend.userId === this.now_select_friend_id ? 'friend-selected' : 'friends'"
-                            class="friends-click" :key="friend.userId"
-                            @click="selectFriend(friend.userId, friend.name)">
-                            <div class="info-card">
-                                <div class="avatar-and-point">
-                                    <img class="friends-avatar"
-                                        :src="friend.avatarUrl ? friend.avatarUrl : friendDefaultAvatar"
-                                        :alt="friend.name" />
-                                    <div :class="friend.state === 0 ? 'online' : 'not-online'"></div>
+                    <div class="grouping-container" v-for="(grouping, index) in groupedFriends">
+                        <div class="grouping-bar" :key="grouping.groupingId" @click="toggleGroup(grouping)">
+                            <span v-if="grouping.isExpanded">∨</span>
+                            <span v-else>∧</span>
+                            {{ grouping.groupingName }}
+                        </div>
+                        <div class="friends-grid">
+                            <div v-if="grouping.isExpanded" v-for="friend in grouping.friends"
+                                :class="friend.userId === this.now_select_friend_id ? 'friend-selected' : 'friends'"
+                                class="friends-click" :key="friend.userId"
+                                @click="selectFriend(friend.userId, friend.name)">
+                                <div class="info-card">
+                                    <div class="avatar-and-point">
+                                        <img class="friends-avatar"
+                                            :src="friend.avatarUrl ? friend.avatarUrl : friendDefaultAvatar"
+                                            :alt="friend.name" />
+                                        <div :class="friend.state === 0 ? 'online' : 'not-online'"></div>
+                                    </div>
+                                    <span class="friends-nickname">{{ friend.name + "(" + friend.username + ")"
+                                        }}</span>
                                 </div>
-                                <span class="friends-nickname">{{ friend.name + "(" + friend.username + ")" }}</span>
+                                <div class="selection">
+                                    <div class="delete-friend"
+                                        @click="selectFriend(friend.userId); showDeleteFriendDialog();"></div>
+                                    <div class="modify-friend" @click=""></div>
+                                </div>
+                                <ConfirmationDialog :visible="isDeleteFriendDialogVisible"
+                                    :message="deleteDialogMessage" @confirm="deleteFriend()"
+                                    @cancel="isDeleteFriendDialogVisible = false" />
                             </div>
-                            <div class="selection">
-                                <div class="delete-friend" @click="selectFriend(friend.userId);showDeleteFriendDialog();"></div>
-                                <div class="modify-friend" @click=""></div>
-                            </div>
-                            <ConfirmationDialog :visible="isDeleteFriendDialogVisible" :message="deleteDialogMessage"
-                                @confirm="deleteFriend()" @cancel="isDeleteFriendDialogVisible = false" />
                         </div>
                     </div>
                 </div>
                 <div v-if="labelSelectedLabel == '群聊'">
                     群聊页面
-                    <div class="friends-grid">
-                        <div v-for="group in groups"
-                            :class="group.groupId === this.now_select_group_id ? 'friend-selected' : 'friends'"
-                            class="friends-click" :key="group.groupId"
-                            @click="selectFriend(group.groupId, group.groupName)">
-                            <div class="info-card">
-                                <div class="avatar-and-point">
-                                    <img class="friends-avatar"
-                                        :src="group.avatarUrl ? group.avatarUrl : groupDefaultAvatar"
-                                        :alt="group.groupName" />
+                    <div class="grouping-container" v-for="(grouping, index) in groupedGroups">
+                        <div class="grouping-bar" :key="grouping.groupingId" @click="toggleGroup(grouping)">
+                            <span v-if="grouping.isExpanded">∨</span>
+                            <span v-else>∧</span>
+                            {{ grouping.groupingName }}
+                        </div>
+                        <div class="friends-grid">
+                            <div v-for="group in grouping.groups"
+                                :class="group.groupId === this.now_select_group_id ? 'friend-selected' : 'friends'"
+                                class="friends-click" :key="group.groupId"
+                                @click="selectGroup(group.groupId, group.groupName)">
+                                <div class="info-card">
+                                    <div class="avatar-and-point">
+                                        <img class="friends-avatar"
+                                            :src="group.avatarUrl ? group.avatarUrl : groupDefaultAvatar"
+                                            :alt="group.groupName" />
+                                    </div>
+                                    <span class="friends-nickname">{{ group.groupName }}</span>
                                 </div>
-                                <span class="friends-nickname">{{ group.groupName }}</span>
-                            </div>
-                            <div class="selection">
-                                <div class="quit-group"></div>
-                                <div class="modify-friend"></div>
+                                <div class="selection">
+                                    <div class="quit-group"
+                                    @click="selectGroup(group.groupId); showDeleteGroupDialog(group.groupCreatorId);"></div>
+                                    <div class="modify-friend"></div>
+                                </div>
+                                <ConfirmationDialog :visible="isDeleteGroupDialogVisible"
+                                    :message="deleteDialogMessage" @confirm="quitGroup(group)"
+                                    @cancel="isDeleteGroupDialogVisible = false" />
                             </div>
                         </div>
                     </div>
@@ -86,6 +107,7 @@ export default {
         if (jsonParsed) {
             this.userInfo_from_store = jsonParsed;
             this.getFriendList();
+            this.getGroupingList();
             this.getGroupList();
         }
     },
@@ -108,21 +130,50 @@ export default {
                 friends: this.friends.filter(friend => !friend.groupingId)
             };
 
-            return [...grouped, ungroupedFriends];
+            // 过滤掉没有 friends 的分组
+            const filteredGrouped = grouped.filter(group => group.friends && group.friends.length > 0);
+
+            // 确保只有当未分组的朋友存在时才添加它
+            if (ungroupedFriends.friends && ungroupedFriends.friends.length > 0) {
+                filteredGrouped.push(ungroupedFriends);
+            }
+
+            return filteredGrouped;
+            // return [...grouped, ungroupedFriends];
         },
+        groupedGroups() {
+            const owned = {
+                groupingId: 0,
+                groupingName: '创建的群',
+                isExpanded: true, // 默认展开
+                groups: this.groups.filter(groups => groups.groupCreatorId === this.userInfo_from_store.userId),
+                //过滤 friends 数组，只保留 创建者是当前用户的群
+            };
+
+            const joined = {
+                groupingId: 1,
+                groupingName: '加入的群',
+                isExpanded: true, // 默认展开
+                groups: this.groups.filter(groups => groups.groupCreatorId != this.userInfo_from_store.userId),
+                //过滤 friends 数组，只保留 创建者不是是当前用户的群
+            };
+            return [owned, joined];
+        }
     },
 
     data() {
         return {
             now_select_friend_id: -1,
             now_select_group_id: -1,
+            now_select_group: null,
             showPopup: false,
             labelSelectedIndex: -1,
             labelSelectedLabel: '好友',
             friendDefaultAvatar: require("../assets/私聊头像.png"),
             groupDefaultAvatar: require("../assets/群聊头像.png"),
             isDeleteFriendDialogVisible: false,
-            deleteDialogMessage: "您确定要删除好友吗？",
+            isDeleteGroupDialogVisible: false,
+            deleteDialogMessage: "",
             channels: [
                 { name: "私聊", url: require("../assets/私聊.png") },
                 { name: "群聊", url: require("../assets/群聊.png") },
@@ -148,8 +199,11 @@ export default {
                   }
                   */
             ],
+            groupings: [
+                //{userId:,groupingId:,groupingName:}
+            ],
             groups: [
-                //  { "groupId": 1,"groupName": "聊天交友群","createTime": ,"updateTime": }
+                //  { groupId: 1, groupName: 聊天交友群, createTime: ,updateTime: ,avatarUrl: ,groupCreatorId: }
             ],
             userInfo_from_query: {
                 id: 0,
@@ -193,7 +247,7 @@ export default {
                     this.friends = res.data.data;
 
                     // 获取好友数据后立即查询有无未读新消息
-                    this.updateUnreadMessageNum();
+                    // this.updateUnreadMessageNum();
                 })
                 .catch((error) => {
                     console.error("请求失败", error);
@@ -221,8 +275,6 @@ export default {
                     console.log(res.data);
                     this.groups = res.data.data;
 
-                    // 获取好友数据后立即查询有无未读新消息
-                    this.updateUnreadMessageNum();
                 })
                 .catch((error) => {
                     console.error("请求失败", error);
@@ -234,10 +286,58 @@ export default {
                     }
                 });
         },
+
+        getGroupingList() {
+            axios({
+                methods: "get",
+                url: "http://localhost:8080/api/grouping/getAllGrouping",
+                headers: {
+                    token: this.userInfo_from_store.token,
+                },
+                params: {
+                    userId: this.userInfo_from_store.userId,
+                }
+            })
+                .then(response => {
+                    console.log("获取分组列表");
+                    console.log(response.data);
+                    const groupingList = response.data.data;
+                    groupingList.forEach((grouping) => {
+                        this.groupings.push(grouping)
+                    });
+                    console.log("测试输出");
+                    this.groupings.forEach((grouping) => {
+                        console.log(grouping);
+                    })
+                })
+                .catch((error) => {
+                    console.error("好友分组请求失败", error);
+                    if (error.response) {
+                        this.errorMessage = `好友分组请求失败，状态码：${error.response.status}`;
+                    } else {
+                        this.errorMessage = "好友分组请求失败，请重试。";
+                    }
+                })
+        },
+        toggleGroup(grouping) {
+            // 切换分组的展开状态
+            if (grouping) {
+                grouping.isExpanded = !grouping.isExpanded;
+            }
+            console.log(this.groupedFriends.find(g => g.groupingId === grouping.groupingId));
+            this.$forceUpdate(); // 强制更新组件，不加没效果
+
+            console.log(this.groupings);
+        },
         selectFriend(id, name) {
             this.now_select_friend_id = id;
             // this.now_chat_friend_name = name;
             console.log("选中用户，id为：" + this.now_select_friend_id);
+        },
+        selectGroup(id, name) {
+            this.now_select_group_id = id;
+            // this.now_chat_friend_name = name;
+            console.log("选中群聊，id为：" + this.now_select_group_id);
         },
         checkWindowSize() {
             this.showBroadcast = window.innerWidth > 1000;
@@ -278,21 +378,94 @@ export default {
                     FriendId: this.now_select_friend_id,
                 }
             })
-            .then(response => {
-                console.log(response.data)
-                if (response.data.code == 1){
-                    this.isDeleteFriendDialogVisible=false;
-                    this.getFriendList();//重新获取好友列表
-                }
-                else{
+                .then(response => {
+                    console.log(response.data)
+                    if (response.data.code == 1) {
+                        this.isDeleteFriendDialogVisible = false;
+                        this.getFriendList();//重新获取好友列表
+                    }
+                    else {
 
-                }
-            })
+                    }
+                })
+                .catch(error=>{
+                    console.log(error);
+                    this.deleteDialogMessage=error;
+                })
 
         },
         showDeleteFriendDialog() {
             console.log(this.isDeleteFriendDialogVisible);
-            this.isDeleteFriendDialogVisible=true;
+            this.isDeleteFriendDialogVisible = true;
+            this.deleteDialogMessage="您确定要删除好友吗？";
+        },
+        showDeleteGroupDialog(creatorId) {
+            console.log(this.isDeleteGroupDialogVisible);
+            this.isDeleteGroupDialogVisible = true;
+            if(creatorId==this.userInfo_from_store.userId)
+            {
+                this.deleteDialogMessage="您确定要解散群聊吗？";
+            }
+            else{
+                this.deleteDialogMessage="您确定要退出群聊吗？";
+            }
+        },
+        quitGroup(group){
+            if(group.creatorId==this.userInfo_from_store.userId){
+                //解散群
+                axios({
+                method: 'delete',
+                url: 'http://localhost:8080/api/user/',
+                headers: {
+                    token: this.userInfo_from_store.token,
+                },
+                params: {
+                    groupId: this.now_select_group_id,
+                }
+            })
+                .then(response => {
+                    console.log(response.data)
+                    if (response.data.code == 1) {
+                        this.isDeleteGroupDialogVisible = false;
+                        this.getGroupList();//重新获取好友列表
+                    }
+                    else {
+
+                    }
+                })
+                .catch(error=>{
+                    console.log(error);
+                    this.deleteDialogMessage=error;
+                })
+
+            } else{
+                //退出群
+                axios({
+                method: 'delete',
+                url: 'http://localhost:8080/api/user/',
+                headers: {
+                    token: this.userInfo_from_store.token,
+                },
+                params: {
+                    groupId: this.now_select_group_id,
+                }
+            })
+                .then(response => {
+                    console.log(response.data)
+                    if (response.data.code == 1) {
+                        this.isDeleteGroupDialogVisible = false;
+                        this.getGroupList();//重新获取好友列表
+                    }
+                    else {
+
+                    }
+                })
+                .catch(error=>{
+                    console.log(error);
+                    this.deleteDialogMessage=error;
+                })
+            }
+        
         }
     },
 };
@@ -405,6 +578,20 @@ export default {
     /* 项目之间的间距 */
 }
 
+@media (max-width: 1480px) {
+    .friends-grid {
+        grid-template-columns: repeat(2, 1fr);
+        /* 每行两个项目 */
+    }
+}
+
+@media (max-width: 1000px) {
+    .friends-grid {
+        grid-template-columns: repeat(1, 1fr);
+        /* 每行一个项目 */
+    }
+}
+
 .aspect-label {
     padding: 0 16px 28px 16px;
     margin: 0 4px;
@@ -423,6 +610,7 @@ export default {
 
 .friends {
     width: 100%;
+    min-width: 382px;
     display: flex;
     justify-content: space-between;
     /* 左右分布 */
@@ -442,6 +630,7 @@ export default {
 
 .friend-selected {
     width: 100%;
+    min-width: 382px;
     display: flex;
     justify-content: space-between;
     /* 左右分布 */
@@ -505,6 +694,34 @@ export default {
     /* 设置合适大小的字体 */
     color: #ebebeb;
     /* 白色字体 */
+    max-width: 80px;
+    overflow: hidden;
+    /* 隐藏溢出的文本 */
+    white-space: nowrap;
+    /* 防止文本换行 */
+    text-overflow: ellipsis;
+    /* 用省略号表示溢出的文本 */
+    position: relative;
+}
+
+/* 悬浮时显示滚动条 */
+.friends-nickname:hover {
+    overflow: auto;
+    /* 显示滚动条 */
+    white-space: normal;
+    /* 允许文本换行 */
+    max-width: none;
+    /* 取消最大宽度限制 */
+    max-height: 80px;
+    /* 设置一个最大高度以显示滚动条 */
+    word-break: break-all;
+    /* 强制长单词换行 */
+    padding: 5px;
+    /* 添加内边距以便于阅读 */
+    z-index: 10;
+    /* 确保它在顶层显示 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    /* 添加阴影效果 */
 }
 
 .friends-click {
@@ -579,5 +796,28 @@ export default {
 
 .quit-group:hover {
     background-color: #3184ff;
+}
+
+.grouping-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.grouping-bar {
+    width: 40%;
+    margin: 0 auto;
+    height: 24px;
+    background-color: #3792fb;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding: 0 4px;
+    margin: 16px 0px 16px 0px;
+    /*上 右 下 左*/
+    font-weight: bold;
+    color: rgb(50, 50, 50);
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
 }
 </style>

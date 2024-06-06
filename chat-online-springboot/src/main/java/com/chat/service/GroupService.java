@@ -21,4 +21,8 @@ public interface GroupService {
 
     void joinGroup(Long userId, Long groupId);
 
+    void exitGroup(Long userId, Long groupId);
+
+
+    void changeCreator(Long groupId, Long userId, String username);
 }
