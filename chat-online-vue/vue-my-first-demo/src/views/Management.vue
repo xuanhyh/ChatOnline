@@ -7,7 +7,8 @@
             </div>
         </div>
 
-        <div class="manager-container" :style="{ width: `${dialogContainerWidth}px` }">
+        <!-- <div class="manager-container" :style="{ width: `${dialogContainerWidth}px` }"> -->
+        <div class="manager-container">
             <div class="manager-header">
                 <div v-for="(aspect, index) in aspects" class="aspect-label"
                     :class="{ 'aspect-label-selected': labelSelectedIndex === index }"
@@ -36,17 +37,26 @@
                                             :alt="friend.name" />
                                         <div :class="friend.state === 0 ? 'online' : 'not-online'"></div>
                                     </div>
-                                    <span class="friends-nickname">{{ friend.name + "(" + friend.username + ")"
-                                        }}</span>
+                                    <!-- <span class="friends-nickname">{{ friend.name + "(" + friend.username + ")"
+                                        }}</span> -->
+                                    <div class="friends-nickname">
+                                        <div class="marquee-wrap">
+                                            <div class="marquee-content">
+                                                {{ friend.name + "(" + friend.username + ")" }}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="selection">
                                     <div class="delete-friend"
                                         @click="selectFriend(friend.userId); showDeleteFriendDialog();"></div>
-                                    <div class="modify-friend" @click=""></div>
+                                    <div class="modify-friend" @click="showImpressionDialog"></div>
                                 </div>
                                 <ConfirmationDialog :visible="isDeleteFriendDialogVisible"
                                     :message="deleteDialogMessage" @confirm="deleteFriend()"
                                     @cancel="isDeleteFriendDialogVisible = false" />
+                                <Impression :visible="isImpressionDialogVisible" :userId=888 @confirm=""
+                                    @cancel="isImpressionDialogVisible = false" />
                             </div>
                         </div>
                     </div>
@@ -74,12 +84,12 @@
                                 </div>
                                 <div class="selection">
                                     <div class="quit-group"
-                                    @click="selectGroup(group.groupId); showDeleteGroupDialog(group.groupCreatorId);"></div>
+                                        @click="selectGroup(group.groupId); showDeleteGroupDialog(group.groupCreatorId);">
+                                    </div>
                                     <div class="modify-friend"></div>
                                 </div>
-                                <ConfirmationDialog :visible="isDeleteGroupDialogVisible"
-                                    :message="deleteDialogMessage" @confirm="quitGroup(group)"
-                                    @cancel="isDeleteGroupDialogVisible = false" />
+                                <ConfirmationDialog :visible="isDeleteGroupDialogVisible" :message="deleteDialogMessage"
+                                    @confirm="quitGroup(group)" @cancel="isDeleteGroupDialogVisible = false" />
                             </div>
                         </div>
                     </div>
@@ -92,18 +102,25 @@
 
 <script>
 import axios from "axios";
-import AddFriend from './AddFriend'
+import Impression from "./Impression.vue";
 import ConfirmationDialog from "./ConfirmationDialog.vue";
+
 
 export default {
     name: "ChatWithFriend",
     components: {
-        AddFriend,
         ConfirmationDialog,
+        Impression
     },
     created() {
         console.log("ChatWithFriend获取到参数", this.$route.params.userName);
         const jsonParsed = JSON.parse(sessionStorage.getItem("userInfo"));
+
+        // 获取当前页面的IP地址
+        var currentUrl = window.location.href;
+        this.hostname = new URL(currentUrl).hostname;
+        console.log("http://" + this.hostname + ":8080/");
+
         if (jsonParsed) {
             this.userInfo_from_store = jsonParsed;
             this.getFriendList();
@@ -173,6 +190,7 @@ export default {
             groupDefaultAvatar: require("../assets/群聊头像.png"),
             isDeleteFriendDialogVisible: false,
             isDeleteGroupDialogVisible: false,
+            isImpressionDialogVisible: false,
             deleteDialogMessage: "",
             channels: [
                 { name: "私聊", url: require("../assets/私聊.png") },
@@ -221,19 +239,19 @@ export default {
     },
     props: {},
     mounted() {
-        window.addEventListener("resize", this.checkWindowSize);
-        this.checkWindowSize();
+        // window.addEventListener("resize", this.checkWindowSize);
+        // this.checkWindowSize();
 
     },
     beforeDestroy() {
-        window.removeEventListener("resize", this.checkWindowSize);
+        // window.removeEventListener("resize", this.checkWindowSize);
     },
 
     methods: {
         getFriendList() {
             axios({
                 method: "get",
-                url: "http://localhost:8080/api/user/getFriendByIdWithGroupingId",
+                url: "http://" + this.hostname + ":8080/api/user/getFriendByIdWithGroupingId",
                 headers: {
                     token: this.userInfo_from_store.token,
                 },
@@ -262,7 +280,7 @@ export default {
         getGroupList() {
             axios({
                 method: "get",
-                url: "http://localhost:8080/api/group/getAllGroup",
+                url: "http://" + this.hostname + ":8080/api/group/getAllGroup",
                 headers: {
                     token: this.userInfo_from_store.token,
                 },
@@ -290,7 +308,7 @@ export default {
         getGroupingList() {
             axios({
                 methods: "get",
-                url: "http://localhost:8080/api/grouping/getAllGrouping",
+                url: "http://" + this.hostname + ":8080/api/grouping/getAllGrouping",
                 headers: {
                     token: this.userInfo_from_store.token,
                 },
@@ -339,12 +357,12 @@ export default {
             // this.now_chat_friend_name = name;
             console.log("选中群聊，id为：" + this.now_select_group_id);
         },
-        checkWindowSize() {
-            this.showBroadcast = window.innerWidth > 1000;
-            const broadcastContainerWidth = this.showBroadcast ? 240 : 0;
-            const availableWidth = window.innerWidth - 320 - broadcastContainerWidth;
-            this.dialogContainerWidth = availableWidth;
-        },
+        // checkWindowSize() {
+        //     this.showBroadcast = window.innerWidth > 1000;
+        //     const broadcastContainerWidth = this.showBroadcast ? 240 : 0;
+        //     const availableWidth = window.innerWidth - 320 - broadcastContainerWidth;
+        //     this.dialogContainerWidth = availableWidth;
+        // },
 
         selectChannel(channel) {
             // 处理选择头像的逻辑，例如显示选中状态等
@@ -370,7 +388,7 @@ export default {
         deleteFriend() {
             axios({
                 method: 'delete',
-                url: 'http://localhost:8080/api/user/delete',
+                url: "http://" + this.hostname + ":8080/api/user/delete",
                 headers: {
                     token: this.userInfo_from_store.token,
                 },
@@ -388,84 +406,86 @@ export default {
 
                     }
                 })
-                .catch(error=>{
+                .catch(error => {
                     console.log(error);
-                    this.deleteDialogMessage=error;
+                    this.deleteDialogMessage = error;
                 })
 
         },
         showDeleteFriendDialog() {
             console.log(this.isDeleteFriendDialogVisible);
             this.isDeleteFriendDialogVisible = true;
-            this.deleteDialogMessage="您确定要删除好友吗？";
+            this.deleteDialogMessage = "您确定要删除好友吗？";
         },
         showDeleteGroupDialog(creatorId) {
             console.log(this.isDeleteGroupDialogVisible);
             this.isDeleteGroupDialogVisible = true;
-            if(creatorId==this.userInfo_from_store.userId)
-            {
-                this.deleteDialogMessage="您确定要解散群聊吗？";
+            if (creatorId == this.userInfo_from_store.userId) {
+                this.deleteDialogMessage = "您确定要解散群聊吗？";
             }
-            else{
-                this.deleteDialogMessage="您确定要退出群聊吗？";
+            else {
+                this.deleteDialogMessage = "您确定要退出群聊吗？";
             }
         },
-        quitGroup(group){
-            if(group.creatorId==this.userInfo_from_store.userId){
+        quitGroup(group) {
+            if (group.creatorId == this.userInfo_from_store.userId) {
                 //解散群
                 axios({
-                method: 'delete',
-                url: 'http://localhost:8080/api/user/',
-                headers: {
-                    token: this.userInfo_from_store.token,
-                },
-                params: {
-                    groupId: this.now_select_group_id,
-                }
-            })
-                .then(response => {
-                    console.log(response.data)
-                    if (response.data.code == 1) {
-                        this.isDeleteGroupDialogVisible = false;
-                        this.getGroupList();//重新获取好友列表
-                    }
-                    else {
-
+                    method: 'delete',
+                    url: "http://" + this.hostname + ":8080/api/user/",
+                    headers: {
+                        token: this.userInfo_from_store.token,
+                    },
+                    params: {
+                        groupId: this.now_select_group_id,
                     }
                 })
-                .catch(error=>{
-                    console.log(error);
-                    this.deleteDialogMessage=error;
-                })
+                    .then(response => {
+                        console.log(response.data)
+                        if (response.data.code == 1) {
+                            this.isDeleteGroupDialogVisible = false;
+                            this.getGroupList();//重新获取好友列表
+                        }
+                        else {
 
-            } else{
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        this.deleteDialogMessage = error;
+                    })
+
+            } else {
                 //退出群
                 axios({
-                method: 'delete',
-                url: 'http://localhost:8080/api/user/',
-                headers: {
-                    token: this.userInfo_from_store.token,
-                },
-                params: {
-                    groupId: this.now_select_group_id,
-                }
-            })
-                .then(response => {
-                    console.log(response.data)
-                    if (response.data.code == 1) {
-                        this.isDeleteGroupDialogVisible = false;
-                        this.getGroupList();//重新获取好友列表
+                    method: 'delete',
+                    url: "http://" + this.hostname + ":8080/api/user/",
+                    headers: {
+                        token: this.userInfo_from_store.token,
+                    },
+                    params: {
+                        groupId: this.now_select_group_id,
                     }
-                    else {
+                })
+                    .then(response => {
+                        console.log(response.data)
+                        if (response.data.code == 1) {
+                            this.isDeleteGroupDialogVisible = false;
+                            this.getGroupList();//重新获取好友列表
+                        }
+                        else {
 
-                    }
-                })
-                .catch(error=>{
-                    console.log(error);
-                    this.deleteDialogMessage=error;
-                })
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        this.deleteDialogMessage = error;
+                    })
             }
-        
+
+        },
+        showImpressionDialog(userId) {
+            this.isImpressionDialogVisible = true;
         }
     },
 };
@@ -474,6 +494,26 @@ export default {
 
 
 <style scoped>
+/* 设置滚动条的样式 */
+::-webkit-scrollbar {
+    width: 8px;
+    /* 设置滚动条的宽度 */
+}
+
+/* 设置滑块的样式 */
+::-webkit-scrollbar-thumb {
+    background-color: #2f3643;
+    /* 设置滑块的背景颜色 */
+    border-radius: 3px;
+    /* 设置滑块的圆角 */
+}
+
+/* 设置滑道的样式 */
+::-webkit-scrollbar-track {
+    background-color: #46494f;
+    /* 设置滑道的背景颜色 */
+}
+
 .container {
     display: flex;
     /*有没有没啥区别*/
@@ -564,9 +604,10 @@ export default {
 
 .manager-body {
     flex: 1;
-    padding: 10px;
+    padding: 0px;
     height: 80%;
     min-height: 200px;
+    overflow: auto;
 }
 
 .friends-grid {
@@ -694,7 +735,7 @@ export default {
     /* 设置合适大小的字体 */
     color: #ebebeb;
     /* 白色字体 */
-    max-width: 80px;
+    max-width: 100px;
     overflow: hidden;
     /* 隐藏溢出的文本 */
     white-space: nowrap;
@@ -704,24 +745,42 @@ export default {
     position: relative;
 }
 
-/* 悬浮时显示滚动条 */
-.friends-nickname:hover {
-    overflow: auto;
-    /* 显示滚动条 */
-    white-space: normal;
-    /* 允许文本换行 */
-    max-width: none;
-    /* 取消最大宽度限制 */
-    max-height: 80px;
-    /* 设置一个最大高度以显示滚动条 */
-    word-break: break-all;
-    /* 强制长单词换行 */
-    padding: 5px;
-    /* 添加内边距以便于阅读 */
-    z-index: 10;
-    /* 确保它在顶层显示 */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    /* 添加阴影效果 */
+.friends-nickname:hover .marquee-wrap {
+    width: 100%;
+    animation: marquee-wrap 4s infinite linear;
+}
+
+.friends-nickname:hover .marquee-content {
+    float: left;
+    white-space: nowrap;
+    min-width: 100%;
+    animation: marquee-content 4s infinite linear;
+}
+
+@keyframes marquee-wrap {
+
+    0%,
+    30% {
+        transform: translateX(0);
+    }
+
+    70%,
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes marquee-content {
+
+    0%,
+    30% {
+        transform: translateX(0);
+    }
+
+    70%,
+    100% {
+        transform: translateX(-100%);
+    }
 }
 
 .friends-click {

@@ -2,12 +2,7 @@
   <div class="container">
     <!-- 侧边栏 -->
     <div class="sidebar">
-      <div
-        class="left-icon"
-        v-for="(channel, index) in channels"
-        :key="index"
-        @click="selectChannel(channel)"
-      >
+      <div class="left-icon" v-for="(channel, index) in channels" :key="index" @click="selectChannel(channel)">
         <img :src="channel.url" :alt="channel.name" />
       </div>
     </div>
@@ -16,32 +11,18 @@
       <div class="username-label">{{ userInfo_from_store.name }}</div>
       <div class="group-list-head">
         <input class="group-list-head-search" type="text" placeholder="搜索" />
-        <div
-          class="group-list-head-add"
-          title="加好友"
-          @click="showPopup = true"
-        >
+        <div class="group-list-head-add" title="加好友" @click="showPopup = true">
           +
         </div>
       </div>
-      <div
-        :class="
-          group.groupId === this.now_chat_group_id ? 'group-selected' : 'groups'
-        "
-        class="groups-click"
-        v-for="(group, index) in groups"
-        :key="index"
-        @click="selectGroup(group.groupId, group.groupName)"
-      >
+      <div :class="group.groupId === this.now_chat_group_id ? 'group-selected' : 'groups'
+        " class="groups-click" v-for="(group, index) in groups" :key="index"
+        @click="selectGroup(group.groupId, group.groupName)">
         <div class="avatar-and-badge">
           <div class="badge" v-if="getUnreadNum(group.groupId) > 0">
             {{ getUnreadNum(group.groupId) }}
           </div>
-          <img
-            class="groups-avatar"
-            src="../assets/群聊头像.png"
-            :alt="group.groupName"
-          />
+          <img class="groups-avatar" src="../assets/群聊头像.png" :alt="group.groupName" />
         </div>
         <span class="groups-nickname">{{ group.groupName }}</span>
       </div>
@@ -50,27 +31,19 @@
     <!-- <p>query获取到：{{ userInfo_from_query.name }}</p><br/> -->
     <!-- <p>store获取到：{{ userInfo_from_store.name }}</p> -->
 
-    
+
     <transition name="fade">
       <AddGroup v-if="showPopup" @close="showPopup = false"></AddGroup>
     </transition>
 
     <!-- 聊天框 -->
-    <div
-      class="dialog-container"
-      :style="{ width: `${dialogContainerWidth}px` }"
-    >
+    <div class="dialog-container" :style="{ width: `${dialogContainerWidth}px` }">
       <div class="dialog-header">{{ chatTo }} {{ errorMessage }}</div>
-      <div class="dialog-body" v-show="groupSelected">
-        <div
-          v-for="(message, index) in messages"
-          :key="index"
-          class="message"
-          :class="{
-            sender: message.sender === 'user',
-            receiver: message.sender === 'other',
-          }"
-        >
+      <div ref="scrollContainer" class="dialog-body" v-show="groupSelected">
+        <div v-for="(message, index) in messages" :key="index" class="message" :class="{
+          sender: message.sender === 'user',
+          receiver: message.sender === 'other',
+        }">
           <img src="../assets/群聊头像.png" class="message-avatar" />
           <div class="message-info">
             <div class="message-meta">
@@ -82,12 +55,7 @@
         </div>
       </div>
       <div class="dialog-footer" v-show="groupSelected">
-        <input
-          type="text"
-          v-model="newMessage"
-          @keyup.enter="sendMessage"
-          placeholder="输入消息..."
-        />
+        <input type="text" v-model="newMessage" @keyup.enter="sendMessage" placeholder="输入消息..." />
         <!-- @keyup.enter="sendMessage"在键盘按下回车时调用sendMessage函数 -->
         <button class="send-button" @click="sendMessage">发送</button>
       </div>
@@ -103,17 +71,39 @@
 <script>
 import axios from "axios";
 import AddGroup from "./AddGroup.vue"
+import { ref, nextTick } from 'vue';
 
 export default {
   name: "ChatWithGroup",
   components: {
     AddGroup
   },
+  setup() {
+    const scrollContainer = ref(null);
+
+    const scrollToBottom = () => {
+      const container = scrollContainer.value;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    };
+
+    return {
+      scrollContainer,
+      scrollToBottom
+    };
+  },
   created() {
     console.log("ChatWithGroup获取到参数", this.$route.params.userName);
     // this.userInfo_from_query.id=this.$route.query.id;
     // this.userInfo_from_query.userName=this.$route.query.userName;
     // this.userInfo_from_query.name=this.$route.query.name;
+
+    // 获取当前页面的IP地址
+    var currentUrl = window.location.href;
+    this.hostname = new URL(currentUrl).hostname;
+    console.log("http://" + this.hostname + ":8080/");
+
     const jsonParsed = JSON.parse(sessionStorage.getItem("userInfo"));
     console.log("userInfo信息：", jsonParsed);
     if (jsonParsed) {
@@ -124,6 +114,7 @@ export default {
 
   data() {
     return {
+      hostname: null,
       showPopup: false,
       channels: [
         { name: "私聊", url: require("../assets/私聊.png") },
@@ -169,7 +160,7 @@ export default {
   props: {},
   mounted() {
     this.ws = new WebSocket(
-      "ws://localhost:8080/api/chat/" + this.userInfo_from_store.userId
+      "ws://" + this.hostname + ":8080/api/chat/" + this.userInfo_from_store.userId
     );
 
     this.ws.onopen = () => {
@@ -221,7 +212,7 @@ export default {
     getGroupList() {
       axios({
         method: "get",
-        url: "http://localhost:8080/api/group/getAllGroup",
+        url: "http://" + this.hostname + ":8080/api/group/getAllGroup",
         headers: {
           token: this.userInfo_from_store.token,
         },
@@ -255,7 +246,7 @@ export default {
       this.groups.forEach((group) => {
         axios({
           method: "get",
-          url: "http://localhost:8080/api/message/getGroupMessageUnreadNum",
+          url: "http://" + this.hostname + ":8080/api/message/getGroupMessageUnreadNum",
           params: {
             groupId: group.groupId,
             userId: this.userInfo_from_store.userId,
@@ -332,7 +323,7 @@ export default {
     updateReadGroupMessageNum() {
       axios({
         method: "patch",
-        url: "http://localhost:8080/api/message/updateReadGroupMessageNum",
+        url: "http://" + this.hostname + ":8080/api/message/updateReadGroupMessageNum",
         params: {
           groupId: this.now_chat_group_id,
           userId: this.userInfo_from_store.userId,
@@ -362,7 +353,7 @@ export default {
     getGroupMessages() {
       axios({
         method: "get",
-        url: "http://localhost:8080/api/message/getGroupMessages",
+        url: "http://" + this.hostname + ":8080/api/message/getGroupMessages",
         params: {
           // senderId:this.userInfo_from_store.userId,
           groupId: this.now_chat_group_id,
@@ -392,6 +383,10 @@ export default {
             });
             this.messages.sort((a, b) => {
               return new Date(a.time) - new Date(b.time);
+            });
+            nextTick(() => {
+              // DOM 更新完成后调用 scrollToBottom
+              this.scrollToBottom();
             });
           }
         })
@@ -458,6 +453,26 @@ export default {
 
 
 <style scoped>
+/* 设置滚动条的样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  /* 设置滚动条的宽度 */
+}
+
+/* 设置滑块的样式 */
+::-webkit-scrollbar-thumb {
+  background-color: #2f3643;
+  /* 设置滑块的背景颜色 */
+  border-radius: 3px;
+  /* 设置滑块的圆角 */
+}
+
+/* 设置滑道的样式 */
+::-webkit-scrollbar-track {
+  background-color: #46494f;
+  /* 设置滑道的背景颜色 */
+}
+
 .container {
   display: flex;
   /*有没有没啥区别*/
@@ -541,6 +556,10 @@ export default {
   align-items: center;
   justify-content: flex-start;
   border-left: #374347 solid 1px;
+  overflow-y: auto;
+  /*自动添加滚动条 */
+  overflow-x: hidden
+    /*自动添加滚动条 */
 }
 
 .groups {
@@ -550,8 +569,10 @@ export default {
   align-items: center;
   /* 垂直居中 */
   transition: background-color 0.2s ease;
-  padding: 8px 0px 8px 4px; /* 上 右 下 左 */
-  margin: 6px 0px 2px -4px; /* 上 右 下 左 */
+  padding: 8px 0px 8px 4px;
+  /* 上 右 下 左 */
+  margin: 6px 0px 2px -4px;
+  /* 上 右 下 左 */
 }
 
 .groups:hover {
@@ -565,8 +586,10 @@ export default {
   align-items: center;
   /* 垂直居中 */
   background-color: #5959c9;
-  padding: 8px 0px 8px 4px; /* 上 右 下 左 */
-  margin: 2px 0px 6px -4px; /* 上 右 下 左 */
+  padding: 8px 0px 8px 4px;
+  /* 上 右 下 左 */
+  margin: 2px 0px 6px -4px;
+  /* 上 右 下 左 */
 }
 
 .groups-avatar {
@@ -631,6 +654,52 @@ export default {
   /* 设置合适大小的字体 */
   color: #ebebeb;
   /* 白色字体 */
+  max-width: 100px;
+  overflow: hidden;
+  /* 隐藏溢出的文本 */
+  white-space: nowrap;
+  /* 防止文本换行 */
+  text-overflow: ellipsis;
+  /* 用省略号表示溢出的文本 */
+  position: relative;
+}
+
+.groups-nickname:hover .marquee-wrap {
+  width: 100%;
+  animation: marquee-wrap 4s infinite linear;
+}
+
+.groups-nickname:hover .marquee-content {
+  float: left;
+  white-space: nowrap;
+  min-width: 100%;
+  animation: marquee-content 4s infinite linear;
+}
+
+@keyframes marquee-wrap {
+
+  0%,
+  30% {
+    transform: translateX(0);
+  }
+
+  70%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes marquee-content {
+
+  0%,
+  30% {
+    transform: translateX(0);
+  }
+
+  70%,
+  100% {
+    transform: translateX(-100%);
+  }
 }
 
 .groups-click {

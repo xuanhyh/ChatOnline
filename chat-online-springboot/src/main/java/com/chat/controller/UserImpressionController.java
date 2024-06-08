@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 //@RestController 注解是 @Controller 的一个特殊版本，默认将控制器中的方法的返回值直接作为 HTTP 响应的正文内容，Spring MVC 会自动将方法返回的数据对象转换为对应的格式
 @RequestMapping("/api/impression")
-@CrossOrigin(origins = "http://localhost:8081") // 允许来自 http://localhost:8081 的跨域请求
+@CrossOrigin(origins = "*") // 允许来自 http://localhost:8081 的跨域请求
 @Slf4j
 public class UserImpressionController {
     @Autowired

@@ -14,6 +14,7 @@ public class Group implements Serializable {
     private Long groupId;
     private String groupName;
     private String avatarUrl;
+    private Long groupCreatorId;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }

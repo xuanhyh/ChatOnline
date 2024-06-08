@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/message")
-@CrossOrigin(origins = "http://localhost:8081") // 允许来自 http://localhost:8081 的跨域请求
+@CrossOrigin(origins = "*") // 允许来自 http://localhost:8081 的跨域请求
 @Slf4j
 public class MessageController {
 

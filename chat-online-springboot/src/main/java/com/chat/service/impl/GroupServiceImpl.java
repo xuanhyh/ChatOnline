@@ -90,6 +90,8 @@ public class GroupServiceImpl implements GroupService {
             Group newGroup =  groupMapper.getById(id);
             if(newGroup!=null)
             {
+                Long creatorId = groupMemberMapper.getCreator(newGroup.getGroupId());
+                newGroup.setGroupCreatorId(creatorId);
                 groups.add(newGroup);
             }
         }

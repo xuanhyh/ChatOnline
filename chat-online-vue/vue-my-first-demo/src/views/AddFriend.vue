@@ -7,10 +7,10 @@
     </div>
 
     <div v-if="userInfoShow" class="user-card">
-    <!-- <div v-if="true" class="user-card"> -->
+      <!-- <div v-if="true" class="user-card"> -->
       <div class="avatar-and-point">
         <img :src="this.userInfo.avatarUrl ? this.userInfo.avatarUrl : this.defaultAvatar" alt="用户头像" class="avatar">
-        <div :class="userInfo.state === 0 ? 'online' : 'not-online' "></div>
+        <div :class="userInfo.state === 0 ? 'online' : 'not-online'"></div>
       </div>
       <div class="user-info">
         <p>用户名：{{ userInfo.username }}</p>
@@ -21,7 +21,7 @@
     </div>
 
     <div class="errorMessage">
-      {{this.errorMessage}}
+      {{ this.errorMessage }}
     </div>
 
     <button @click="$emit('close')" class="close-button">关闭</button>
@@ -36,6 +36,12 @@ export default {
     if (jsonParsed) {
       this.userInfo_from_store = jsonParsed;
     }
+
+    // 获取当前页面的IP地址
+    var currentUrl = window.location.href;
+    this.hostname = new URL(currentUrl).hostname;
+    console.log("http://" + this.hostname + ":8080/");
+
   },
   data() {
     return {
@@ -45,9 +51,9 @@ export default {
       errorMessage: '',
       defaultAvatar: require('../assets/私聊头像.png'),
       userInfo: {
-        username:'无',
-        name:'无',
-        sex:'无',
+        username: '无',
+        name: '无',
+        sex: '无',
         avatarUrl: null,
       },
       addFriend: {
@@ -65,13 +71,12 @@ export default {
   methods: {
     async handleSelect() {
       console.log(this.friendUsername);
-      if(this.friendUsername.trim()=='')
-      {
-        this.errorMessage='请输入用户名';
+      if (this.friendUsername.trim() == '') {
+        this.errorMessage = '请输入用户名';
         return;
       }
       try {
-        const response = await axios.get('http://localhost:8080/api/user/searchFriend', {
+        const response = await axios.get("http://" + this.hostname + ":8080/api/user/searchFriend", {
           params: {
             username: this.friendUsername
           },
@@ -83,7 +88,7 @@ export default {
         console.log(this.response.code);
       } catch (error) {
         console.error('查找失败', error);
-        this.errorMessage='查找失败'
+        this.errorMessage = '查找失败'
       }
       if (this.response.code === 1) {
         this.userInfoShow = true;
@@ -108,21 +113,21 @@ export default {
       this.addFriend.fromUserName = this.userInfo_from_store.name;
       axios({
         method: "post",
-        url: "http://localhost:8080/api/user/sendFriendRequest",
+        url: "http://" + this.hostname + ":8080/api/user/sendFriendRequest",
         headers: {
           'Content-Type': 'application/json',
           'token': this.userInfo_from_store.token
         },
         data: this.addFriend
       })
-      .then(res => {
-        console.log("收到响应" + res);
-        if (res.data.code === 1) {
-          alert('发送好友请求成功！');
-        } else {
-          alert('发送好友请求失败：' + res.data.msg);
-        }
-      });
+        .then(res => {
+          console.log("收到响应" + res);
+          if (res.data.code === 1) {
+            alert('发送好友请求成功！');
+          } else {
+            alert('发送好友请求失败：' + res.data.msg);
+          }
+        });
     }
   }
 }
@@ -142,7 +147,8 @@ export default {
   width: 400px;
   border-top: #180a91 solid 3px;
   border-right: #180a91 solid 5px;
-  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);/* 水平偏移 垂直偏移 模糊程度 （尺寸） 颜色 （内部还是外部） */
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+  /* 水平偏移 垂直偏移 模糊程度 （尺寸） 颜色 （内部还是外部） */
 }
 
 .popup-header {
@@ -238,7 +244,7 @@ export default {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  margin:8px;
+  margin: 8px;
   background-color: #00ff11;
 }
 
@@ -246,8 +252,7 @@ export default {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  margin:8px;
+  margin: 8px;
   background-color: #444444;
 }
-
 </style>

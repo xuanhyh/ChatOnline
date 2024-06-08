@@ -2,68 +2,51 @@
   <div class="container">
     <!-- 侧边栏 -->
     <div class="sidebar">
-      <div
-        class="left-icon"
-        v-for="(channel, index) in channels"
-        :key="index"
-        @click="selectChannel(channel)"
-      >
+      <div class="left-icon" v-for="(channel, index) in channels" :key="index" @click="selectChannel(channel)">
         <img :src="channel.url" :alt="channel.name" />
-      </div>
-      <button class="sidebar-button" @click="downloadPrivateMessages">下载聊天记录</button>
-      <div 
-        class="sidebar-button"
-        title="好友通知"
-        @click="showFriendRequests = true"
-      >
-        好友通知
       </div>
       <!-- <button type="button" @click="updateFriendTest()">更新好友信息测试</button> -->
     </div>
 
     <!-- 好友列表 -->
     <div class="friends-list">
-      <div class="username-label">{{ userInfo_from_store.name }}</div>
+      <div class="user-card">
+        <div class="username-label">{{ userInfo_from_store.name }}</div>
+        <div class="notify-button" title="好友通知" @click="showFriendRequests = true">
+          好友通知
+        </div>
+      </div>
       <div class="friend-list-head">
         <input class="friend-list-head-search" type="text" placeholder="搜索" />
-        <div
-          class="friend-list-head-add"
-          title="加好友"
-          @click="showPopup = true"
-        >
+        <div class="friend-list-head-add" title="加好友" @click="showPopup = true">
           +
         </div>
       </div>
       <div class="grouping-container" v-for="(grouping, index) in groupedFriends">
-        <div
-          class="grouping-bar"
-          :key="grouping.groupingId"
-          @click="toggleGroup(grouping)">
+        <div class="grouping-bar" :key="grouping.groupingId" @click="toggleGroup(grouping)">
           <span v-if="grouping.isExpanded">∨</span>
           <span v-else>∧</span>
-          {{grouping.groupingName}}
+          {{ grouping.groupingName }}
         </div>
-        <div
-          :class="friend.userId === this.now_chat_id ? 'friend-selected' : 'friends'"
-          class="friends-click"
-          v-if="grouping.isExpanded"
-          v-for="friend in grouping.friends"
-          :key="friend.userId"
-          @click="selectFriend(friend.userId, friend.name)"
-        >
+        <div :class="friend.userId === this.now_chat_id ? 'friend-selected' : 'friends'" class="friends-click"
+          v-if="grouping.isExpanded" v-for="friend in grouping.friends" :key="friend.userId"
+          @click="selectFriend(friend.userId, friend.name)">
           <div class="avatar-and-badge">
             <div class="badge" v-if="getUnreadNum(friend.userId) > 0">
               {{ getUnreadNum(friend.userId) }}
             </div>
-            <img
-              class="friends-avatar"
-              src="../assets/私聊头像.png"
-              :alt="friend.name"
-            />
+            <img class="friends-avatar" src="../assets/私聊头像.png" :alt="friend.name" />
           </div>
-          <span class="friends-nickname">{{
+          <!-- <span class="friends-nickname">{{
             friend.name + "(" + friend.username + ")"
-          }}</span>
+          }}</span> -->
+          <div class="friends-nickname">
+            <div class="marquee-wrap">
+              <div class="marquee-content">
+                {{ friend.name + "(" + friend.username + ")" }}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -71,27 +54,22 @@
     <!-- <p>query获取到：{{ userInfo_from_query.name }}</p><br/> -->
     <!-- <p>store获取到：{{ userInfo_from_store.name }}</p> -->
 
-    
+
     <transition name="fade">
       <AddFriend v-if="showPopup" @close="showPopup = false"></AddFriend>
     </transition>
+    <transition name="fade">
+      <FriendRequests v-if="showFriendRequests" @close="showFriendRequests = false"></FriendRequests>
+    </transition>
 
     <!-- 聊天框 -->
-    <div
-      class="dialog-container"
-      :style="{ width: `${dialogContainerWidth}px` }"
-    >
+    <div class="dialog-container" :style="{ width: `${dialogContainerWidth}px` }">
       <div class="dialog-header">{{ chatTo }} {{ errorMessage }}</div>
-      <div class="dialog-body" v-show="friendSelected">
-        <div
-          v-for="(message, index) in messages"
-          :key="index"
-          class="message"
-          :class="{
-            sender: message.sender === 'user',
-            receiver: message.sender === 'other',
-          }"
-        >
+      <div ref="scrollContainer" class="dialog-body" v-show="friendSelected">
+        <div v-for="(message, index) in messages" :key="index" class="message" :class="{
+          sender: message.sender === 'user',
+          receiver: message.sender === 'other',
+        }">
           <img src="../assets/私聊头像.png" class="message-avatar" />
           <div class="message-info">
             <div class="message-meta">
@@ -103,13 +81,9 @@
         </div>
       </div>
       <div class="dialog-footer" v-show="friendSelected">
-        <input
-          type="text"
-          v-model="newMessage"
-          @keyup.enter="sendMessage"
-          placeholder="输入消息..."
-        />
+        <input type="text" v-model="newMessage" @keyup.enter="sendMessage" placeholder="输入消息..." />
         <!-- @keyup.enter="sendMessage"在键盘按下回车时调用sendMessage函数 -->
+        <button class="download-button" @click="downloadPrivateMessages">下载聊天记录</button>
         <button class="send-button" @click="sendMessage">发送</button>
       </div>
     </div>
@@ -117,7 +91,7 @@
     <!-- 在线广播 -->
     <div class="broadcast-container" v-show="showBroadcast">
       <div class="dialog-header">在线广播</div>
-      <FriendRequests/>
+      <!-- <FriendRequests /> -->
     </div>
   </div>
 </template>
@@ -126,6 +100,7 @@
 import axios from "axios";
 import AddFriend from './AddFriend'
 import FriendRequests from './FriendRequests'
+import { ref, nextTick } from 'vue';
 
 export default {
   name: "ChatWithFriend",
@@ -133,16 +108,40 @@ export default {
     AddFriend,
     FriendRequests,
   },
+  setup() {
+    const scrollContainer = ref(null);
+
+    const scrollToBottom = () => {
+      const container = scrollContainer.value;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    };
+
+    return {
+      scrollContainer,
+      scrollToBottom
+    };
+  },
   created() {
     console.log("ChatWithFriend获取到参数", this.$route.params.userName);
     // this.userInfo_from_query.id=this.$route.query.id;
     // this.userInfo_from_query.userName=this.$route.query.userName;
     // this.userInfo_from_query.name=this.$route.query.name;
+
+    // 获取当前页面的IP地址
+    var currentUrl = window.location.href;
+    this.hostname = new URL(currentUrl).hostname;
+    console.log("获取网址：http://" + this.hostname + ":8080/");
+
     const jsonParsed = JSON.parse(sessionStorage.getItem("userInfo"));
     if (jsonParsed) {
       this.userInfo_from_store = jsonParsed;
       this.getFriendList();
       this.getGroupingList();
+      // 设置定时器每1秒调用一次fetchFriendRequests
+      // this.intervalId = setInterval(this.getFriendList, 1000);
+      //应该在同意好友请求之后再调用，而不是定时调用
     }
   },
   computed: {
@@ -155,7 +154,7 @@ export default {
           //过滤 friends 数组，只保留 groupingId 与当前分组对象的 groupingId 相匹配的朋友。
         };
       });
-          // 提取没有分组的朋友
+      // 提取没有分组的朋友
       const ungroupedFriends = {
         userId: this.userInfo_from_store.userId,
         groupingId: -1,
@@ -170,6 +169,7 @@ export default {
 
   data() {
     return {
+      hostname: null,
       showPopup: false,
       showFriendRequests: false,
       channels: [
@@ -237,7 +237,7 @@ export default {
   props: {},
   mounted() {
     this.ws = new WebSocket(
-      "ws://localhost:8080/api/chat/" + this.userInfo_from_store.userId
+      "ws://" + this.hostname + ":8080/api/chat/" + this.userInfo_from_store.userId
     );
 
     this.ws.onopen = () => {
@@ -290,7 +290,7 @@ export default {
     // updateFriendTest(){
     //   axios({
     //       method: "put",
-    //       url: "http://localhost:8080/api/user/updateFriend",
+    //       url: "http://" + this.hostname + ":8080/api/user/updateFriend",
     //       headers: {
     //         'token': this.userInfo_from_store.token,
     //       },
@@ -312,7 +312,7 @@ export default {
     getFriendList() {
       axios({
         method: "get",
-        url: "http://localhost:8080/api/user/getFriendByIdWithGroupingId",
+        url: "http://" + this.hostname + ":8080/api/user/getFriendByIdWithGroupingId",
         headers: {
           token: this.userInfo_from_store.token,
         },
@@ -338,37 +338,37 @@ export default {
           }
         });
     },
-    getGroupingList(){
+    getGroupingList() {
       axios({
-        methods:"get",
-        url:"http://localhost:8080/api/grouping/getAllGrouping",
-        headers:{
-          token:this.userInfo_from_store.token,
+        methods: "get",
+        url: "http://" + this.hostname + ":8080/api/grouping/getAllGrouping",
+        headers: {
+          token: this.userInfo_from_store.token,
         },
-        params:{
-          userId:this.userInfo_from_store.userId,
+        params: {
+          userId: this.userInfo_from_store.userId,
         }
       })
-      .then(response=>{
-        console.log("获取分组列表");
-        console.log(response.data);
-        const groupingList=response.data.data;
-        groupingList.forEach((grouping) => {
-          this.groupings.push(grouping)
-        });
-        console.log("测试输出");
-        this.groupings.forEach((grouping)=>{
-          console.log(grouping);
+        .then(response => {
+          console.log("获取分组列表");
+          console.log(response.data);
+          const groupingList = response.data.data;
+          groupingList.forEach((grouping) => {
+            this.groupings.push(grouping)
+          });
+          console.log("测试输出");
+          this.groupings.forEach((grouping) => {
+            console.log(grouping);
+          })
         })
-      })
-      .catch((error)=>{
-        console.error("好友分组请求失败", error);
-        if (error.response) {
-          this.errorMessage = `好友分组请求失败，状态码：${error.response.status}`;
-        } else {
-          this.errorMessage = "好友分组请求失败，请重试。";
-        }
-      })
+        .catch((error) => {
+          console.error("好友分组请求失败", error);
+          if (error.response) {
+            this.errorMessage = `好友分组请求失败，状态码：${error.response.status}`;
+          } else {
+            this.errorMessage = "好友分组请求失败，请重试。";
+          }
+        })
     },
     updateUnreadMessageNum() {
       console.log("查询新消息");
@@ -378,7 +378,7 @@ export default {
       this.friends.forEach((friend) => {
         axios({
           method: "get",
-          url: "http://localhost:8080/api/message/getPrivateMessageUnreadNum",
+          url: "http://" + this.hostname + ":8080/api/message/getPrivateMessageUnreadNum",
           params: {
             userId: this.userInfo_from_store.userId,
             friendId: friend.userId,
@@ -389,6 +389,7 @@ export default {
           },
         })
           .then((response) => {
+            console.log(friend.name + "新消息：");
             console.log(response.data);
             if (response.data.code == 0) {
               this.errorMessage = response.data.msg;
@@ -459,7 +460,7 @@ export default {
     updateReadPrivateMessageStatus() {
       axios({
         method: "patch",
-        url: "http://localhost:8080/api/message/updateReadPrivateMessageStatus",
+        url: "http://" + this.hostname + ":8080/api/message/updateReadPrivateMessageStatus",
         params: {
           userId: this.userInfo_from_store.userId,
           friendId: this.now_chat_id,
@@ -494,7 +495,7 @@ export default {
     getPrivateMessages() {
       axios({
         method: "get",
-        url: "http://localhost:8080/api/message/getPrivateMessages",
+        url: "http://" + this.hostname + ":8080/api/message/getPrivateMessages",
         params: {
           senderId: this.userInfo_from_store.userId,
           receiverId: this.now_chat_id,
@@ -528,6 +529,10 @@ export default {
             this.messages.sort((a, b) => {
               return new Date(a.time) - new Date(b.time);
             });
+            nextTick(() => {
+              // DOM 更新完成后调用 scrollToBottom
+              this.scrollToBottom();
+            });
           }
         })
         .catch((error) => {
@@ -539,9 +544,9 @@ export default {
           }
         });
     },
-    downloadPrivateMessages(){
+    downloadPrivateMessages() {
       axios({
-        url: "http://localhost:8080/api/message/downloadPrivateMessage",
+        url: "http://" + this.hostname + ":8080/api/message/downloadPrivateMessage",
         method: "GET",
         responseType: "blob",
         params: {
@@ -552,19 +557,19 @@ export default {
           'Content-Type': 'application/json',
           'token': this.userInfo_from_store.token,
         },
-        }).then(response => {
-          if(response.status === 204){
-            alert("没有消息记录可下载");
-            return;
-          }
-          const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' });
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.setAttribute('download', 'chat_record.csv');
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+      }).then(response => {
+        if (response.status === 204) {
+          alert("没有消息记录可下载");
+          return;
+        }
+        const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'chat_record.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }).catch(error => {
         console.error('下载聊天记录失败:', error);
       });
@@ -631,6 +636,26 @@ export default {
 
 
 <style scoped>
+/* 设置滚动条的样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  /* 设置滚动条的宽度 */
+}
+
+/* 设置滑块的样式 */
+::-webkit-scrollbar-thumb {
+  background-color: #2f3643;
+  /* 设置滑块的背景颜色 */
+  border-radius: 3px;
+  /* 设置滑块的圆角 */
+}
+
+/* 设置滑道的样式 */
+::-webkit-scrollbar-track {
+  background-color: #46494f;
+  /* 设置滑道的背景颜色 */
+}
+
 .container {
   display: flex;
   /*有没有没啥区别*/
@@ -653,6 +678,7 @@ export default {
 }
 
 .username-label {
+  margin-left: 40px;
   margin-top: 20px;
   margin-bottom: 8px;
   color: white;
@@ -714,7 +740,12 @@ export default {
   align-items: center;
   justify-content: flex-start;
   border-left: #374347 solid 1px;
+  overflow-y: auto;
+  /*自动添加滚动条 */
+  overflow-x: visible;
+  /*自动添加滚动条 */
 }
+
 
 .friends {
   width: 100%;
@@ -723,8 +754,10 @@ export default {
   align-items: center;
   /* 垂直居中 */
   transition: background-color 0.2s ease;
-  padding: 8px 0px 8px 4px; /* 上 右 下 左 */
-  margin: 6px 0px 2px -4px; /* 上 右 下 左 */
+  padding: 8px 0px 8px 4px;
+  /* 上 右 下 左 */
+  margin: 6px 0px 2px -4px;
+  /* 上 右 下 左 */
 }
 
 .friends:hover {
@@ -738,8 +771,10 @@ export default {
   align-items: center;
   /* 垂直居中 */
   background-color: #5959c9;
-  padding: 8px 0px 8px 4px; /* 上 右 下 左 */
-  margin: 2px 0px 6px -4px; /* 上 右 下 左 */
+  padding: 8px 0px 8px 4px;
+  /* 上 右 下 左 */
+  margin: 2px 0px 6px -4px;
+  /* 上 右 下 左 */
 }
 
 .friends-avatar {
@@ -804,6 +839,52 @@ export default {
   /* 设置合适大小的字体 */
   color: #ebebeb;
   /* 白色字体 */
+  max-width: 100px;
+  overflow: hidden;
+  /* 隐藏溢出的文本 */
+  white-space: nowrap;
+  /* 防止文本换行 */
+  text-overflow: ellipsis;
+  /* 用省略号表示溢出的文本 */
+  position: relative;
+}
+
+.friends-nickname:hover .marquee-wrap {
+  width: 100%;
+  animation: marquee-wrap 4s infinite linear;
+}
+
+.friends-nickname:hover .marquee-content {
+  float: left;
+  white-space: nowrap;
+  min-width: 100%;
+  animation: marquee-content 4s infinite linear;
+}
+
+@keyframes marquee-wrap {
+
+  0%,
+  30% {
+    transform: translateX(0);
+  }
+
+  70%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes marquee-content {
+
+  0%,
+  30% {
+    transform: translateX(0);
+  }
+
+  70%,
+  100% {
+    transform: translateX(-100%);
+  }
 }
 
 .friends-click {
@@ -851,7 +932,7 @@ export default {
 }
 
 .friend-list-head-add:hover {
-    background-color: #0e9f6f;
+  background-color: #0e9f6f;
 }
 
 .dialog-container {
@@ -1047,11 +1128,24 @@ input[type="text"] {
   margin-right: 20px;
 }
 
-.sidebar-button {
-  min-width: 64px;
-  min-height: 48px;
-  height: 48px;
-  width: 64px;
+.download-button {
+  min-width: 90px;
+  min-height: 40px;
+  height: 40px;
+  width: 90px;
+  padding: 6px 2px;
+  background-color: #0e9f6f;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-right: 20px;
+}
+
+.notify-button {
+  font-size: 12px;
+  height: 20px;
+  width: 60px;
   padding: 6px 2px;
   background-color: #0e9f6f;
   color: #fff;
@@ -1060,13 +1154,22 @@ input[type="text"] {
   cursor: pointer;
 }
 
-.grouping-container{
+.user-card {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+
+.grouping-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   width: 100%;
-  left:0;
+  left: 0;
 }
 
 .grouping-bar {
@@ -1077,7 +1180,8 @@ input[type="text"] {
   flex-direction: row;
   justify-content: flex-start;
   padding: 0 4px;
-  margin: 8px 20px 8px 0px; /* 上 右 下 左 */
+  margin: 8px 20px 8px 0px;
+  /* 上 右 下 左 */
   font-weight: bold;
   color: rgb(50, 50, 50);
 }
