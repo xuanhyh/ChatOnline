@@ -3,6 +3,7 @@ package com.chat.mapper;
 import com.chat.annotation.AutoFill;
 import com.chat.common.enumeration.OperationType;
 import com.chat.pojo.entity.EmailAndVerifyCode;
+import com.chat.pojo.entity.Group;
 import com.chat.pojo.entity.User;
 import org.apache.ibatis.annotations.*;
 
@@ -53,4 +54,7 @@ public interface UserMapper {
 
     //为了好友分组新做的接口
     List<User> getFriendByIdWithGroupingId(Long id);
+
+    @Select("select group_id from group_member where member_id=#{userID}")
+    List<Integer>getAllGroupByUserID(Long userID);
 }

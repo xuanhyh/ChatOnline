@@ -2,6 +2,7 @@ package com.chat.service;
 
 
 import com.chat.pojo.dto.*;
+import com.chat.pojo.entity.Group;
 import com.chat.pojo.entity.User;
 import com.chat.pojo.vo.UserSearchVO;
 
@@ -24,6 +25,10 @@ public interface UserService {
 
     void updateFriend(UpdateFriendDTO updateFriendDTO);
 
+    List<Integer>getAllGroupByUserID(Long userId);
+
 
     List<User> getFriendByIdWithGroupingId(Long id);
+
+
 }

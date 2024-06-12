@@ -22,7 +22,8 @@ public interface GroupMemberMapper {
     public Integer getMemberPermissionByGroupId(Long groupId,Long userId);
 
     @Delete("delete from group_member where group_id = #{groupId}")
-    void deleteGroupMemberById(Long groupId);
+    void deleteGroupAllMemberById(Long groupId);
+
 
     @Select("select * from group_member where group_id = #{groupId} and member_id = #{userId};")
     GroupMember checkUserInGroup(Long userId, Long groupId);

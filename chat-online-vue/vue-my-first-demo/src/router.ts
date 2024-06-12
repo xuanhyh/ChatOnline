@@ -5,6 +5,7 @@ import ChatGroupWindow from './views/ChatGroupWindow.vue'
 import Login from './views/Login.vue'
 import SignUp from './views/SignUp.vue'
 import Management from './views/Management.vue'
+import OnlineCall from './views/OnlineCall.vue'
 
 const router = createRouter({
     history: createWebHistory(),
@@ -15,6 +16,7 @@ const router = createRouter({
         {path: '/chatWithFriend/:userName', name: 'ChatWithFriend', component: ChatWindow, props: true},
         {path: '/chatWithGroup/:userName', name: 'ChatWithGroup', component: ChatGroupWindow, props: true},
         {path: '/Management/:userName', name: 'Management', component: Management, props: true},
+        {path: '/OnlineCall/:userId/:targetUserId', name: 'OnlineCall', component: OnlineCall, props: true},
     ]
 })
 

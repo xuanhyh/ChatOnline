@@ -119,7 +119,7 @@ export default {
         // 获取当前页面的IP地址
         var currentUrl = window.location.href;
         this.hostname = new URL(currentUrl).hostname;
-        console.log("http://" + this.hostname + ":8080/");
+        console.log("https://" + this.hostname + ":8080/");
 
         if (jsonParsed) {
             this.userInfo_from_store = jsonParsed;
@@ -251,7 +251,7 @@ export default {
         getFriendList() {
             axios({
                 method: "get",
-                url: "http://" + this.hostname + ":8080/api/user/getFriendByIdWithGroupingId",
+                url: "https://" + this.hostname + ":8080/api/user/getFriendByIdWithGroupingId",
                 headers: {
                     token: this.userInfo_from_store.token,
                 },
@@ -280,7 +280,7 @@ export default {
         getGroupList() {
             axios({
                 method: "get",
-                url: "http://" + this.hostname + ":8080/api/group/getAllGroup",
+                url: "https://" + this.hostname + ":8080/api/group/getAllGroup",
                 headers: {
                     token: this.userInfo_from_store.token,
                 },
@@ -308,7 +308,7 @@ export default {
         getGroupingList() {
             axios({
                 methods: "get",
-                url: "http://" + this.hostname + ":8080/api/grouping/getAllGrouping",
+                url: "https://" + this.hostname + ":8080/api/grouping/getAllGrouping",
                 headers: {
                     token: this.userInfo_from_store.token,
                 },
@@ -388,7 +388,7 @@ export default {
         deleteFriend() {
             axios({
                 method: 'delete',
-                url: "http://" + this.hostname + ":8080/api/user/delete",
+                url: "https://" + this.hostname + ":8080/api/user/delete",
                 headers: {
                     token: this.userInfo_from_store.token,
                 },
@@ -432,7 +432,7 @@ export default {
                 //解散群
                 axios({
                     method: 'delete',
-                    url: "http://" + this.hostname + ":8080/api/user/",
+                    url: "https://" + this.hostname + ":8080/api/user/",
                     headers: {
                         token: this.userInfo_from_store.token,
                     },
@@ -459,7 +459,7 @@ export default {
                 //退出群
                 axios({
                     method: 'delete',
-                    url: "http://" + this.hostname + ":8080/api/user/",
+                    url: "https://" + this.hostname + ":8080/api/user/",
                     headers: {
                         token: this.userInfo_from_store.token,
                     },

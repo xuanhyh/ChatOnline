@@ -16,7 +16,7 @@ import java.util.Random;
 
 public class MailUtil{
     private String fromEmail = "3295320346@qq.com";
-    private String fromEmailPw = "tkcswpodkhskdaii";
+    private String fromEmailPw = "ianndluhetxocjad";
     private String myEmailSMTPHost = "smtp.qq.com";
     private Properties properties; // 用于参数配置
     private Session session; // 用户创建会话对象
@@ -35,6 +35,9 @@ public class MailUtil{
         properties.setProperty("mail.transport.protocol", "smtp");  // 使用的协议
         properties.setProperty("mail.smtp.host", myEmailSMTPHost);  // 发件人的邮箱的 SMTP 服务器地址
         properties.setProperty("mail.smtp.auth", "true");  // 打开认证
+        properties.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        properties.setProperty("mail.smtp.socketFactory.port", "465");
+        properties.setProperty("mail.smtp.port", "465");
         session = Session.getInstance(properties);
     }
 

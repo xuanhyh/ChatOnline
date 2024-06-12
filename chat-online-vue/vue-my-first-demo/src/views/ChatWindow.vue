@@ -65,7 +65,7 @@
     <!-- 聊天框 -->
     <div class="dialog-container" :style="{ width: `${dialogContainerWidth}px` }">
       <div class="dialog-header">{{ chatTo }} {{ errorMessage }}</div>
-      <div ref="scrollContainer" class="dialog-body" v-show="friendSelected">
+      <div class="dialog-body" ref="scrollContainer" @scroll="handleScroll" v-show="friendSelected">
         <div v-for="(message, index) in messages" :key="index" class="message" :class="{
           sender: message.sender === 'user',
           receiver: message.sender === 'other',
@@ -85,6 +85,7 @@
         <!-- @keyup.enter="sendMessage"在键盘按下回车时调用sendMessage函数 -->
         <button class="download-button" @click="downloadPrivateMessages">下载聊天记录</button>
         <button class="send-button" @click="sendMessage">发送</button>
+        <button class="send-button" @click="callPage()">视频</button>
       </div>
     </div>
 
@@ -100,6 +101,7 @@
 import axios from "axios";
 import AddFriend from './AddFriend'
 import FriendRequests from './FriendRequests'
+import OnlineCall from "./OnlineCall.vue";
 import { ref, nextTick } from 'vue';
 
 export default {
@@ -107,6 +109,7 @@ export default {
   components: {
     AddFriend,
     FriendRequests,
+    OnlineCall,
   },
   setup() {
     const scrollContainer = ref(null);
@@ -132,7 +135,7 @@ export default {
     // 获取当前页面的IP地址
     var currentUrl = window.location.href;
     this.hostname = new URL(currentUrl).hostname;
-    console.log("获取网址：http://" + this.hostname + ":8080/");
+    console.log("获取网址：https://" + this.hostname + ":8080/");
 
     const jsonParsed = JSON.parse(sessionStorage.getItem("userInfo"));
     if (jsonParsed) {
@@ -208,6 +211,11 @@ export default {
         token: "0",
       },
       messages: [],
+      page: 0,//当前页码
+      size: 10,
+      totalPages: 1,
+      loadingNow: false,//是否正在加载，防止多次触发
+      oldFirstMessage: null,//旧的第一个消息位置
       broadcastMessages: [], // 在线广播信息
       unreadMessageNum: [
         // {friendId: 0,unreadNum: 0,}
@@ -237,7 +245,7 @@ export default {
   props: {},
   mounted() {
     this.ws = new WebSocket(
-      "ws://" + this.hostname + ":8080/api/chat/" + this.userInfo_from_store.userId
+      "wss://" + this.hostname + ":8080/api/chat/" + this.userInfo_from_store.userId
     );
 
     this.ws.onopen = () => {
@@ -290,7 +298,7 @@ export default {
     // updateFriendTest(){
     //   axios({
     //       method: "put",
-    //       url: "http://" + this.hostname + ":8080/api/user/updateFriend",
+    //       url: "https://" + this.hostname + ":8080/api/user/updateFriend",
     //       headers: {
     //         'token': this.userInfo_from_store.token,
     //       },
@@ -312,7 +320,7 @@ export default {
     getFriendList() {
       axios({
         method: "get",
-        url: "http://" + this.hostname + ":8080/api/user/getFriendByIdWithGroupingId",
+        url: "https://" + this.hostname + ":8080/api/user/getFriendByIdWithGroupingId",
         headers: {
           token: this.userInfo_from_store.token,
         },
@@ -341,7 +349,7 @@ export default {
     getGroupingList() {
       axios({
         methods: "get",
-        url: "http://" + this.hostname + ":8080/api/grouping/getAllGrouping",
+        url: "https://" + this.hostname + ":8080/api/grouping/getAllGrouping",
         headers: {
           token: this.userInfo_from_store.token,
         },
@@ -378,7 +386,7 @@ export default {
       this.friends.forEach((friend) => {
         axios({
           method: "get",
-          url: "http://" + this.hostname + ":8080/api/message/getPrivateMessageUnreadNum",
+          url: "https://" + this.hostname + ":8080/api/message/getPrivateMessageUnreadNum",
           params: {
             userId: this.userInfo_from_store.userId,
             friendId: friend.userId,
@@ -445,6 +453,11 @@ export default {
       }
       this.now_chat_id = 0;
     },
+    callPage() {
+      this.$router.push({
+          path: "/OnlineCall/" + this.userInfo_from_store.userId+"/"+this.now_chat_id,
+        });
+    },
     // addKeyValuePairForUnreadMessage(key, value) {
     // this.$set(this.unreadMessages, key, value);
     // },
@@ -460,7 +473,7 @@ export default {
     updateReadPrivateMessageStatus() {
       axios({
         method: "patch",
-        url: "http://" + this.hostname + ":8080/api/message/updateReadPrivateMessageStatus",
+        url: "https://" + this.hostname + ":8080/api/message/updateReadPrivateMessageStatus",
         params: {
           userId: this.userInfo_from_store.userId,
           friendId: this.now_chat_id,
@@ -492,10 +505,94 @@ export default {
           }
         });
     },
+    formatDate(timeArray) {
+      const [year, month, day, hour, minute, second] = timeArray;
+      return new Date(year, month - 1, day, hour, minute, second).toLocaleString();
+    },
+    getPrivateMessagePages(senderId, receiverId, page, size) {
+      axios({
+        method: 'get',
+        url: "https://" + this.hostname + ":8080/api/message/getPrivateMessagePages",
+        headers: {
+          token: this.userInfo_from_store.token,
+        },
+        params: {
+          senderId: senderId,
+          receiverId: receiverId,
+          page: page,
+          size: size
+        },
+      })
+        .then((res) => {
+          console.log('Received data:', res.data.data);
+          console.log('Received messages:', res.data.data.content);
+          res.data.data.content.forEach((msg) => { //将消息倒序一下后依次插入最前面
+            this.messages.unshift({
+              text: msg.textMessage,
+              sender:
+                msg.senderId === this.userInfo_from_store.userId
+                  ? "user"
+                  : "other",
+              time: this.formatDate(msg.sendTime),
+              name:
+                msg.senderId === this.userInfo_from_store.userId
+                  ? this.userInfo_from_store.name
+                  : this.now_chat_friend_name,
+            });
+          });
+          if (this.page == 0)//如果是刚开始点进好友对话框，就滚到最底下
+          {
+            nextTick(() => {
+              // DOM 更新完成后调用 scrollToBottom
+              this.scrollToBottom();
+            });
+          }
+
+          const allMessages = this.$refs.scrollContainer.querySelectorAll('.message');
+          if (allMessages.length > 0) {
+            this.oldFirstMessage = allMessages[res.data.data.content.length-1];
+          }
+
+          this.$nextTick(() => {
+            console.log("第一个消息的位置：" + this.oldFirstMessage)
+            if (this.oldFirstMessage) {
+              this.oldFirstMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          });
+
+          this.totalPages = res.data.data.totalPages;
+          this.page++;
+        })
+        .catch((error) => {
+          console.error('Failed to load messages', error);
+          if (error.response) {
+            this.errorMessage = `请求失败，状态码：${error.response.status}`;
+          } else {
+            this.errorMessage = '请求失败，请重试。';
+          }
+        })
+        .finally(() => {
+          this.loadingNow = false;
+        });
+    },
+    loadMessagePages() {
+      if (this.loadingNow || this.page >= this.totalPages) {
+        console.log(this.page + ">=" + this.totalPages)
+        return;
+      }
+
+      this.loadingNow = true;
+      this.getPrivateMessagePages(this.userInfo_from_store.userId, this.now_chat_id, this.page, this.size);
+    },
+    handleScroll(event) { //滚动到最顶端加载
+      if (event.target.scrollTop === 0) {
+        this.loadMessagePages();
+      }
+    },
     getPrivateMessages() {
       axios({
         method: "get",
-        url: "http://" + this.hostname + ":8080/api/message/getPrivateMessages",
+        url: "https://" + this.hostname + ":8080/api/message/getPrivateMessages",
         params: {
           senderId: this.userInfo_from_store.userId,
           receiverId: this.now_chat_id,
@@ -546,7 +643,7 @@ export default {
     },
     downloadPrivateMessages() {
       axios({
-        url: "http://" + this.hostname + ":8080/api/message/downloadPrivateMessage",
+        url: "https://" + this.hostname + ":8080/api/message/downloadPrivateMessage",
         method: "GET",
         responseType: "blob",
         params: {
@@ -589,7 +686,10 @@ export default {
       this.friendSelected = true;
       this.chatTo = this.now_chat_friend_name;
       this.friendClickStyle = "friend-selected";
-      this.getPrivateMessages();
+      // this.getPrivateMessages();
+      this.messages = [];//暂时加载前直接清零
+      this.page = 0;//暂时加载前直接清零
+      this.loadMessagePages();
       const unreadNumfond = this.unreadMessageNum.find(
         (item) => item.friendId === id
       );
@@ -743,7 +843,11 @@ export default {
   overflow-y: auto;
   /*自动添加滚动条 */
   overflow-x: visible;
-  /*自动添加滚动条 */
+  z-index: 99;
+}
+
+.friends-list::-webkit-scrollbar {
+  display: none;
 }
 
 
@@ -964,7 +1068,7 @@ export default {
   padding: 10px;
   height: 80%;
   min-height: 200px;
-  overflow-y: auto;
+  overflow-y: scroll;
 }
 
 .dialog-footer {
@@ -1173,16 +1277,19 @@ input[type="text"] {
 }
 
 .grouping-bar {
-  width: calc(100% - 20px);
-  height: 24px;
+  width: calc(100% - 80px);
+  height: 20px;
+  font-size: 14px;
   background-color: #3792fb;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
   padding: 0 4px;
-  margin: 8px 20px 8px 0px;
+  /* margin: 8px 20px 8px 0px; */
+  margin: 8px 70px 8px 0px;
   /* 上 右 下 左 */
   font-weight: bold;
   color: rgb(50, 50, 50);
+  border-top-right-radius: 20px;
 }
 </style>

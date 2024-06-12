@@ -102,7 +102,7 @@ export default {
     // 获取当前页面的IP地址
     var currentUrl = window.location.href;
     this.hostname = new URL(currentUrl).hostname;
-    console.log("http://" + this.hostname + ":8080/");
+    console.log("https://" + this.hostname + ":8080/");
 
     const jsonParsed = JSON.parse(sessionStorage.getItem("userInfo"));
     console.log("userInfo信息：", jsonParsed);
@@ -160,7 +160,7 @@ export default {
   props: {},
   mounted() {
     this.ws = new WebSocket(
-      "ws://" + this.hostname + ":8080/api/chat/" + this.userInfo_from_store.userId
+      "wss://" + this.hostname + ":8080/api/chat/" + this.userInfo_from_store.userId
     );
 
     this.ws.onopen = () => {
@@ -212,7 +212,7 @@ export default {
     getGroupList() {
       axios({
         method: "get",
-        url: "http://" + this.hostname + ":8080/api/group/getAllGroup",
+        url: "https://" + this.hostname + ":8080/api/group/getAllGroup",
         headers: {
           token: this.userInfo_from_store.token,
         },
@@ -246,7 +246,7 @@ export default {
       this.groups.forEach((group) => {
         axios({
           method: "get",
-          url: "http://" + this.hostname + ":8080/api/message/getGroupMessageUnreadNum",
+          url: "https://" + this.hostname + ":8080/api/message/getGroupMessageUnreadNum",
           params: {
             groupId: group.groupId,
             userId: this.userInfo_from_store.userId,
@@ -323,7 +323,7 @@ export default {
     updateReadGroupMessageNum() {
       axios({
         method: "patch",
-        url: "http://" + this.hostname + ":8080/api/message/updateReadGroupMessageNum",
+        url: "https://" + this.hostname + ":8080/api/message/updateReadGroupMessageNum",
         params: {
           groupId: this.now_chat_group_id,
           userId: this.userInfo_from_store.userId,
@@ -353,7 +353,7 @@ export default {
     getGroupMessages() {
       axios({
         method: "get",
-        url: "http://" + this.hostname + ":8080/api/message/getGroupMessages",
+        url: "https://" + this.hostname + ":8080/api/message/getGroupMessages",
         params: {
           // senderId:this.userInfo_from_store.userId,
           groupId: this.now_chat_group_id,

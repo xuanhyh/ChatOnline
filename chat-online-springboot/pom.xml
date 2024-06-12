@@ -17,6 +17,22 @@
         <java.version>17</java.version>
     </properties>
     <dependencies>
+<!--    JPA用于消息分页    -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+<!--    需要用这个支持JPA 不然报JAXBException-->
+<!--    Java EE 8 中的 javax.xml.bind.JAXBException 已经被
+        Jakarta EE 8 中的 jakarta.xml.bind.JAXBException 取代了，所以在运行时找不到对应的类    -->
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>10.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>

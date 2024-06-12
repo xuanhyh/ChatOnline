@@ -4,7 +4,6 @@ package com.chat.mapper;
 import com.chat.annotation.AutoFill;
 import com.chat.common.enumeration.OperationType;
 import com.chat.pojo.entity.Group;
-import com.chat.pojo.entity.User;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -28,5 +27,6 @@ public interface GroupMapper {
     @Delete("delete from `group` where group_id = #{groupId}")
     void deleteGroupById(Long groupId);
 
-
+    @Delete("delete from group_member where group_id=#{groupId} and member_id=#{memberId}")
+    void deleteGroupMember(Long userId,Long groupId);
 }

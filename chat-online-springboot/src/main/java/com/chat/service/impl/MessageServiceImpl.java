@@ -3,6 +3,7 @@ package com.chat.service.impl;
 import ch.qos.logback.core.encoder.EchoEncoder;
 import com.chat.common.exception.BaseException;
 import com.chat.mapper.MessageMapper;
+import com.chat.repository.MessageRepository;
 import com.chat.mapper.UserMapper;
 import com.chat.pojo.entity.Message;
 import com.chat.pojo.entity.User;
@@ -14,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -40,6 +44,17 @@ public class MessageServiceImpl implements MessageService {
 
     @Autowired
     UserMapper userMapper;
+
+    @jakarta.annotation.Resource
+    private MessageRepository messageRepository;
+
+    @Override
+    public Page<Message> getPrivateMessagePages(Long senderId, Long receiverId, int page, int size) {
+        log.info("获取分页消息");
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("sendTime").descending());
+        log.info(pageRequest.toString());
+        return messageRepository.findBySenderIdAndReceiverId(senderId,receiverId,pageRequest);
+    }
 
     @Override
     public List<Message> selectPrivateMessage(Long senderId, Long receiverId){

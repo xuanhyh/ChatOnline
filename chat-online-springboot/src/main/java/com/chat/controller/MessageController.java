@@ -8,6 +8,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +26,25 @@ public class MessageController {
 
     @Autowired
     MessageService messageService;
+
+//    @GetMapping("/getPrivateMessagePages")
+//    public ResponseEntity<List<Message>> getPrivateMessagePages(
+//            @RequestParam int page,
+//            @RequestParam int size) {
+//        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("timestamp").descending());
+//        List<Message> messages = messageService.getPrivateMessagePages(pageRequest).getContent();
+//        return ResponseEntity.ok(messages);
+//    }
+
+    @GetMapping("/getPrivateMessagePages")
+    public Result<Page<Message>> getPrivateMessagePages(
+            Long senderId,
+            Long receiverId,
+            @RequestParam int page,
+            @RequestParam int size) {
+        Page<Message> messages = messageService.getPrivateMessagePages(senderId,receiverId,page,size);
+        return Result.success(messages);
+    }
 
     @GetMapping("/getPrivateMessages")
     public Result getPrivateMessages(Long senderId, Long receiverId){

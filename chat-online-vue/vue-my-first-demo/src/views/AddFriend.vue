@@ -40,7 +40,7 @@ export default {
     // 获取当前页面的IP地址
     var currentUrl = window.location.href;
     this.hostname = new URL(currentUrl).hostname;
-    console.log("http://" + this.hostname + ":8080/");
+    console.log("https://" + this.hostname + ":8080/");
 
   },
   data() {
@@ -76,7 +76,7 @@ export default {
         return;
       }
       try {
-        const response = await axios.get("http://" + this.hostname + ":8080/api/user/searchFriend", {
+        const response = await axios.get("https://" + this.hostname + ":8080/api/user/searchFriend", {
           params: {
             username: this.friendUsername
           },
@@ -113,7 +113,7 @@ export default {
       this.addFriend.fromUserName = this.userInfo_from_store.name;
       axios({
         method: "post",
-        url: "http://" + this.hostname + ":8080/api/user/sendFriendRequest",
+        url: "https://" + this.hostname + ":8080/api/user/sendFriendRequest",
         headers: {
           'Content-Type': 'application/json',
           'token': this.userInfo_from_store.token

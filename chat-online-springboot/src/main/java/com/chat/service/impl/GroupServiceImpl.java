@@ -15,10 +15,8 @@ import com.chat.pojo.entity.User;
 import com.chat.pojo.vo.GroupSearchVO;
 import com.chat.pojo.vo.UserSearchVO;
 import com.chat.service.GroupService;
-import com.chat.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -107,12 +105,11 @@ public class GroupServiceImpl implements GroupService {
             if(memberPermission.equals(1)){//权限不足
                 return -1;
             }else{
-                groupMemberMapper.deleteGroupMemberById(groupId);
+                groupMemberMapper.deleteGroupAllMemberById(groupId);
                 groupMapper.deleteGroupById(groupId);
                 return 1;
             }
         }
-
     }
 
     @Override
@@ -183,5 +180,8 @@ public class GroupServiceImpl implements GroupService {
 
     }
 
-
+    @Override
+    public void quitGroup(Long userId, Long groupId) {
+        groupMapper.deleteGroupMember(userId,groupId);
+    }
 }

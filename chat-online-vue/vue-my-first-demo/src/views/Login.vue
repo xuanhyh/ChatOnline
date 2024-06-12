@@ -32,7 +32,7 @@ export default {
     var currentUrl = window.location.href;
     this.hostname = new URL(currentUrl).hostname;
     window.sessionStorage.setItem('hostname', JSON.stringify(this.hostname));
-    console.log("http://"+this.hostname+":8080/");
+    console.log("https://"+this.hostname+":8080/");
   },
   data() {
     return {
@@ -48,7 +48,7 @@ export default {
     fetchData() {
       axios({
         method: "post",
-        url: "http://"+this.hostname+":8080/api/user/login",
+        url: "https://"+this.hostname+":8080/api/user/login",
         headers: {
           'Content-Type': 'application/json',
         },

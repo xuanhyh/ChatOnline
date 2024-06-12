@@ -2,6 +2,7 @@ src/assets  放置静态文件
 src/components  放置组件
 App.vue  根组件
 main.js  主入口文件
+server.crt和server.key是签名证书
 
   <div class="hello">
     <h3>模板语法</h3>

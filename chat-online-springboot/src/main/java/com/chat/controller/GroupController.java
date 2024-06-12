@@ -76,6 +76,9 @@ public class GroupController {
     }
 
 
+    /*
+    解散群
+     */
     @GetMapping("/dissolve")
     public int dissolve(Long userId,Long groupId){
         log.info("获取群内所有成员，群id为：{}",groupId);

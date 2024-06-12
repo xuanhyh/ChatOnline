@@ -193,4 +193,10 @@ public class UserController {
         log.info("获取id{}用户的所有好友（带分组id）",id);
         return Result.success(userService.getFriendByIdWithGroupingId(id));
     }
+
+    @GetMapping("/getGroups")
+    public Result getAllGroupByUserID(Long userID){
+        log.info("获取用id为{}所有群聊",userID);
+        return Result.success(userService.getAllGroupByUserID(userID));
+    }
 }

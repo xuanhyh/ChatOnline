@@ -12,6 +12,7 @@ import com.chat.mapper.UserFriendMapper;
 import com.chat.mapper.UserMapper;
 import com.chat.pojo.dto.*;
 import com.chat.pojo.entity.EmailAndVerifyCode;
+import com.chat.pojo.entity.Group;
 import com.chat.pojo.entity.User;
 import com.chat.pojo.entity.UserFriend;
 import com.chat.pojo.vo.UserSearchVO;
@@ -166,10 +167,18 @@ public class UserServiceImpl implements UserService {
         userFriendMapper.update(userFriend);
     }
 
+    @Override
+    public List<Integer> getAllGroupByUserID(Long userId) {
+        log.info("获取用户id为{}的所有群聊", userId);
+        return userMapper.getAllGroupByUserID(userId);
+    }
 
 
     @Override
     public List<User> getFriendByIdWithGroupingId(Long id){
         return userMapper.getFriendByIdWithGroupingId(id);
     }
+
+    //退出某个群
+
 }

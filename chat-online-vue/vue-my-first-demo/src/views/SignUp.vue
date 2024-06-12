@@ -48,7 +48,7 @@ export default {
     // 获取当前页面的IP地址
     var currentUrl = window.location.href;
     this.hostname = new URL(currentUrl).hostname;
-    console.log("http://" + this.hostname + ":8080/");
+    console.log("https://" + this.hostname + ":8080/");
   },
   data() {
     return {
@@ -71,7 +71,7 @@ export default {
         this.errorMessage = "请填写邮箱";
         return;
       }
-      axios.post("http://" + this.hostname + ":8080/api/user/sendVerifyCode", {
+      axios.post('https://" + this.hostname + ":8080/api/user/sendVerifyCode', {
         email: this.formData.email
       })
         .then(response => {
@@ -108,7 +108,7 @@ export default {
         this.errorMessage = "有空信息"
       }
       else {
-        axios.post('http://" + this.hostname + ":8080/api/user/signup', this.formData)
+        axios.post('https://" + this.hostname + ":8080/api/user/signup', this.formData)
           .then(response => {
             console.log(response.data);
             if (response.data.code == 0) {

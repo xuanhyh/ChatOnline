@@ -23,6 +23,9 @@ public interface GroupService {
 
     void exitGroup(Long userId, Long groupId);
 
-
     void changeCreator(Long groupId, Long userId, String username);
+
+    //退出群
+    void quitGroup(Long userId,Long groupId);
+
 }

@@ -31,7 +31,7 @@ export default {
     // 获取当前页面的IP地址
     var currentUrl = window.location.href;
     this.hostname = new URL(currentUrl).hostname;
-    console.log("http://" + this.hostname + ":8080/");
+    console.log("https://" + this.hostname + ":8080/");
 
     this.fetchFriendRequests();
     // 设置定时器每1秒调用一次fetchFriendRequests
@@ -53,7 +53,7 @@ export default {
     fetchFriendRequests() {
       axios({
         method: "get",
-        url: "http://" + this.hostname + ":8080/api/user/getFriendRequests",
+        url: "https://" + this.hostname + ":8080/api/user/getFriendRequests",
         headers: {
           token: this.userInfo_from_store.token,
         },
@@ -68,7 +68,7 @@ export default {
     handleAccept(fromUserId) {
       axios({
         method: "post",
-        url: "http://" + this.hostname + ":8080/api/user/respondToFriendRequest",
+        url: "https://" + this.hostname + ":8080/api/user/respondToFriendRequest",
         headers: {
           token: this.userInfo_from_store.token,
         },
@@ -92,7 +92,7 @@ export default {
     handleReject(fromUserId) {
       axios({
         method: "post",
-        url: "http://" + this.hostname + ":8080/api/user/respondToFriendRequest",
+        url: "https://" + this.hostname + ":8080/api/user/respondToFriendRequest",
         headers: {
           token: this.userInfo_from_store.token,
         },

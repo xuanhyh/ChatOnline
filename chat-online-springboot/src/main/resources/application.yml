@@ -1,14 +1,24 @@
 server:
   port: 8080
+  ssl:
+    key-store: classpath:server.p12
+    key-store-password: chat-online #密码
+    key-store-type: PKCS12
+    key-alias: chat-online #设置的别名
 
 spring:
   main:
     allow-circular-references: true
   datasource:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://47.121.137.215:3306/chat_online #服务器地址
+      url: jdbc:mysql://47.121.137.215:3306/chat_online #150.158.2.7为服务器地址
       username: root
-      password: 123456 # 服务器密码
+      password: 123456 #Chat-Online123为服务器密码
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    show-sql: true # 是否打印 SQL
+#    hibernate:
+#      ddl-auto: update # 自动创建、更新表结构，不启用
 
 mybatis:
   configuration:
