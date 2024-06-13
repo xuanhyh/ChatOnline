@@ -84,7 +84,7 @@ HTML/JS/CSS开发IDE：Sublime Text 3
 
 # 四、开发流程图
 
-![](media/2b5cf2e3a0974c5134b36e7682068463.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/2b5cf2e3a0974c5134b36e7682068463.png)
 
 # 五、项目结构和模板语法
 
