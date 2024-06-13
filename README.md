@@ -285,7 +285,7 @@ utils：包含通用的工具类，用于提供各种实用功能。
 -   Vue Router：实现前端路由管理，支持用户在不同页面间导航。
 -   Vuex：用于管理应用中的状态，实现跨组件数据共享。
 
-![](media/0d946fbdcb9b6b755bad8c6912282055.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/0d946fbdcb9b6b755bad8c6912282055.png)
 
 ### 6.3. 后端设计
 
@@ -299,18 +299,18 @@ utils：包含通用的工具类，用于提供各种实用功能。
 -   Java：作为后端开发语言，提供强大的编程能力和丰富的生态支持。
 -   Spring Boot：快速搭建项目，提供自动配置、内嵌容器等功能，简化开发流程。
 
-![Spring Boot的优点](media/d3b6e158cd1ff1b07c5174b1a68cb9dc.png)
+![Spring Boot的优点](https://github.com/xuanhyh/ChatOnline/raw/master/media/d3b6e158cd1ff1b07c5174b1a68cb9dc.png)
 
 **消息队列**
 
 -   用于解耦系统模块、削峰填谷、提高系统吞吐量。
 -   JWT：保障系统和个人隐私安全
 
-![](media/14342ab943270656c0716820cc4536e8.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/14342ab943270656c0716820cc4536e8.png)
 
 **WebSocket**
 - 原理图
-![](media/websocket_image.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/websocket_image.png)
 
 -   WebSocket协议：这是一种基于TCP的协议，旨在实现客户端与服务器间的实时通信。通过发起HTTP/HTTPS请求进行握手，建立TCP连接后，允许服务器与客户端随时相互推送信息，其API调用简单，通过创建Socket实例和事件方法（如onopen、onclose、onmessage）来管理连接和数据交换。
 
@@ -323,7 +323,7 @@ utils：包含通用的工具类，用于提供各种实用功能。
 在线聊天系统需要实现用户注册、登录、添加好友、发起聊天、接收消息等功能。为了满足这些功能需求，我们需要设计一个能够存储用户信息、好友关系、聊天记录等数据的数据库。本项目选择MySQL作为关系型数据库，存储用户信息、好友关系、聊天记录等数据。
 
 **E-R图**
-![](media/er_image.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/er_image.png)
 
 **表结构设计**
 
@@ -401,61 +401,61 @@ utils：包含通用的工具类，用于提供各种实用功能。
 
 用户通过浏览器访问服务器时，需要输入用户名和密码登录：
 
-![](media/50fdad2f9c51a835abf8de0975dd2936.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/50fdad2f9c51a835abf8de0975dd2936.png)
 
 若该用户不存在则反映账号不存在：
 
-![](media/789297e291f9f445d50e5a1a8ba38d64.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/789297e291f9f445d50e5a1a8ba38d64.png)
 
 注册账号：
 
-![](media/3936444343ab888bf7a24e96ab7bc429.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/3936444343ab888bf7a24e96ab7bc429.png)
 
 登录注册好的账号，进入聊天界面：
 
-![](media/39317a5689d39bebcfce715103a86bc2.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/39317a5689d39bebcfce715103a86bc2.png)
 
 ## 7.2 聊天管理（私聊，群聊）
 
 互发消息私聊:
 
-![](media/6140babd7f80c92f864b1a6370a4e0bf.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/6140babd7f80c92f864b1a6370a4e0bf.png)
 
 发送群聊消息：
 
-![](media/3af3ecb239230a68b39940e6ccfdf178.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/3af3ecb239230a68b39940e6ccfdf178.png)
 
 选择下载该聊天记录到本地：
 
-![](media/5ad85dc4c1b1539689cc1854d6afe12c.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/5ad85dc4c1b1539689cc1854d6afe12c.png)
 
-![](media/91957263b860ef2ce680fa0a8c89dfab.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/91957263b860ef2ce680fa0a8c89dfab.png)
 
 ## 7.3 好友管理（要求可分组管理）
 
 对好友的分组：
 
-![](media/ac9a4d7d1fc8dee79340a622423c0c2a.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/ac9a4d7d1fc8dee79340a622423c0c2a.png)
 
 对好友的删除：
 
-![](media/5ad174d62866a840c0a4144a1c05f968.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/5ad174d62866a840c0a4144a1c05f968.png)
 
-![](media/3bd647f23b6d905d84843195ef6b8a89.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/3bd647f23b6d905d84843195ef6b8a89.png)
 
-![](media/dd33ab74a917152b593d658bd27286a8.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/dd33ab74a917152b593d658bd27286a8.png)
 
 使用用户名查找好友或群聊并申请添加：
 
-![](media/78789710005945a917d44abdd2b56e17.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/78789710005945a917d44abdd2b56e17.png)
 
 对方收到好友申请：
 
-![](media/350f0008ac2a75ed41fece790068f8b9.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/350f0008ac2a75ed41fece790068f8b9.png)
 
 加为好友并聊天：
 
-![](media/8e5cd22e4b50c400ac1f9551a0684206.png)
+![](https://github.com/xuanhyh/ChatOnline/raw/master/media/8e5cd22e4b50c400ac1f9551a0684206.png)
 
 # 八、评估和总结
 
